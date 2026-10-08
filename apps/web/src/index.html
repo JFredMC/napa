@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ñapa · Ofertas reales en Colombia</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Compara precios de tiendas colombianas, detecta descuentos inflados con el historial, mira el precio por kilo o litro y reparte tu mercado entre tiendas para pagar menos."
+    />
+    <meta name="theme-color" content="#070d18" />
+    <meta name="author" content="JFredDev" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="brand/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JFredDev" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Ñapa · Las ofertas que sí son ofertas" />
+    <meta
+      property="og:description"
+      content="Buscador de ofertas para Colombia: puntaje por oferta, detector de descuentos inflados, precio por unidad, alertas, lista de compras optimizada y tiendas cercanas. Demo hecha por JFredDev."
+    />
+    <meta property="og:url" content="https://jfredmc.github.io/napa/" />
+    <meta property="og:image" content="https://jfredmc.github.io/napa/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ñapa · Las ofertas que sí son ofertas" />
+    <meta name="twitter:image" content="https://jfredmc.github.io/napa/og.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@600;700&display=swap"
+    />
+    <script>
+      try {
+        var t = localStorage.getItem('napa:theme');
+        if (t !== 'light' && t !== 'dark')
+          t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+    <noscript>Ñapa necesita JavaScript para funcionar.</noscript>
+  </body>
+</html>

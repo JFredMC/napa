@@ -135,7 +135,7 @@ export const STORES: Record<string, StoreMeta> = {
     liveSource: 'vtex',
     vtexOrigin: 'https://www.olimpica.com',
     sourceNote:
-      'Catálogo público de VTEX. Su robots.txt bloquea /busca y cualquier URL con "&" o "%", así que el backend consulta la API de catálogo con una sola variable (?ft=arroz+blanco), sin tildes ni paginación, con caché y límite de ritmo.',
+      'Catálogo público de VTEX. Su robots.txt bloquea /busca y cualquier URL con "&" o "%", así que el backend consulta la API de catálogo con una sola palabra (?ft=arroz), sin tildes ni paginación, y filtra el resto de la búsqueda en el backend, con caché y límite de ritmo.',
     osm: ['Olímpica', 'Olimpica', 'SAO', 'Superalmacenes Olímpica', 'Supertiendas Olímpica'],
     categories: [...GROCERY, 'tecnologia', 'electrohogar', 'hogar'],
   },

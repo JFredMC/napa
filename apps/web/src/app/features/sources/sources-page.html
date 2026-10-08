@@ -1,0 +1,157 @@
+<section class="page narrow">
+  <div class="page-head">
+    <div>
+      <h1>Fuentes: qué es real y qué es simulado</h1>
+      <p class="muted">
+        Ñapa nunca presenta un precio simulado como si fuera real. Cada oferta lleva el distintivo
+        <span class="source-tag sim"><i class="bi bi-cpu" aria-hidden="true"></i>Simulado</span> o
+        <span class="source-tag live"
+          ><i class="bi bi-broadcast" aria-hidden="true"></i>En vivo</span
+        >.
+      </p>
+    </div>
+  </div>
+
+  <div class="card mode-card" data-testid="mode-card">
+    @if (catalog.mode === 'demo') {
+      <h2><i class="bi bi-cpu" aria-hidden="true"></i> Estás en modo demo</h2>
+      <p>
+        Esta versión (GitHub Pages) no tiene backend:
+        <strong>todos los precios son simulados en tu navegador</strong>, con productos y marcas
+        ficticias, 120 días de historial generado y condiciones de envío y calificaciones
+        ilustrativas. Las tiendas sí son reales; sus precios aquí no.
+      </p>
+      <p class="muted small">
+        El backend en NestJS (en el repositorio) consulta las fuentes reales permitidas. Se corre en
+        local y la app cambia a modo API con el selector Demo/API.
+      </p>
+    } @else {
+      <h2><i class="bi bi-broadcast" aria-hidden="true"></i> Modo API: {{ apiUrl }}</h2>
+      <p>
+        Las tiendas con fuente permitida traen precios reales; las demás siguen simuladas y marcadas
+        en cada oferta.
+      </p>
+    }
+  </div>
+
+  <div class="card">
+    <h2>Tiendas</h2>
+    <div class="table-wrap">
+      <table class="sources" data-testid="sources-table">
+        <thead>
+          <tr>
+            <th scope="col">Tienda</th>
+            <th scope="col">Ahora</th>
+            <th scope="col">Con el backend</th>
+            <th scope="col">Adaptador</th>
+            <th scope="col">Por qué</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track r.store.id) {
+            <tr [attr.data-testid]="'source-' + r.store.id">
+              <td data-label="Tienda"><app-store-chip [storeId]="r.store.id" /></td>
+              <td data-label="Ahora">
+                @switch (r.status?.mode ?? 'simulated') {
+                  @case ('live') {
+                    <span class="source-tag live">En vivo</span>
+                  }
+                  @case ('blocked') {
+                    <span class="source-tag blocked" [title]="r.status?.reason ?? ''"
+                      >Bloqueada → simulada</span
+                    >
+                  }
+                  @default {
+                    <span class="source-tag sim">Simulada</span>
+                  }
+                }
+              </td>
+              <td data-label="Con el backend" class="small">
+                {{ potential[r.store.id] ?? 'Simulada' }}
+              </td>
+              <td data-label="Adaptador" class="small">{{ adapter[r.store.liveSource] }}</td>
+              <td data-label="Por qué" class="small muted">{{ r.store.sourceNote }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h2>Reglas que sigue el backend</h2>
+      <ul class="checks">
+        <li>
+          Revisa el <code>robots.txt</code> de cada tienda antes de pedir nada y respeta su
+          intención. Si no lo puede leer, no consulta.
+        </li>
+        <li>
+          Solo APIs públicas u oficiales. <strong>No hace scraping</strong> de páginas ni de apps.
+        </li>
+        <li>
+          Una petición cada 1,5 s por tienda, caché de 10 minutos y User-Agent que se identifica con
+          enlace al repositorio.
+        </li>
+        <li>
+          Si una fuente falla o la bloquean, esa tienda vuelve al simulado y la respuesta lo dice.
+        </li>
+        <li>Los precios reales solo se comparan con precios reales.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Qué haría falta para salir en vivo</h2>
+      <ul class="checks">
+        <li>
+          <strong>Hosting</strong> para el backend (un contenedor pequeño: Render, Fly.io o Railway)
+          y poner su URL en <code>environment.ts</code>.
+        </li>
+        <li>
+          <strong>Mercado Libre</strong>: registrar una app en developers.mercadolibre.com.co y un
+          refresh token OAuth; la búsqueda puede seguir restringida por app.
+        </li>
+        <li>
+          <strong>Éxito y Carulla</strong>: permiso o acuerdo de datos (su robots.txt prohíbe
+          <code>/api/</code>).
+        </li>
+        <li>
+          <strong>D1, Ara, Alkosto, Falabella, Shein, Temu</strong>: un convenio, feed de afiliados
+          o API oficial.
+        </li>
+        <li>Una base de datos para guardar el historial (hoy vive en memoria del backend).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cómo decidimos si un descuento es real</h2>
+    <ul class="checks">
+      <li>
+        Con al menos {{ minDays }} días de historial, el precio <strong>habitual</strong> es la
+        mediana de hace 90 a 8 días.
+      </li>
+      <li>
+        <strong>Inflado</strong>: el precio “antes” nunca se cobró en 90 días (con {{ tolerance }} %
+        de margen) o el precio de hoy no baja del habitual.
+      </li>
+      <li>
+        <strong>Dudoso</strong>: anuncia {{ suspicious }} % o más y no hay historial para
+        comprobarlo.
+      </li>
+      <li>
+        <strong>Puntaje 0–100</strong>: ahorro real (35), frente a otras tiendas con envío (25),
+        historial (15), confianza de la tienda (15) y envío (10). Un descuento inflado queda en
+        máximo 30.
+      </li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Ubicación y mapas</h2>
+    <p class="muted">
+      Las sedes cercanas salen de OpenStreetMap vía Overpass API (datos reales, © colaboradores de
+      OpenStreetMap, ODbL). El mapa usa MapLibre con estilos de CARTO, sin llaves. Tu ubicación solo
+      se pide cuando tocas el botón y no se guarda.
+    </p>
+  </div>
+</section>

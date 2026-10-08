@@ -1,0 +1,238 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Lista de compras</h1>
+      <p class="muted">
+        Agrega lo que necesitas y Ñapa reparte la compra entre tiendas para pagar lo menos posible,
+        envíos incluidos.
+      </p>
+    </div>
+    @if (lists.list().length) {
+      <button
+        type="button"
+        class="btn ghost small"
+        (click)="lists.clearList()"
+        data-testid="clear-list"
+      >
+        <i class="bi bi-trash3" aria-hidden="true"></i> Vaciar
+      </button>
+    }
+  </div>
+
+  <div class="split">
+    <div class="stack">
+      <div class="card">
+        <label class="field">
+          <span>Agregar producto</span>
+          <input
+            type="search"
+            placeholder="Busca: leche, café, pañales…"
+            [value]="query()"
+            (input)="query.set($any($event.target).value)"
+            data-testid="list-search"
+            autocomplete="off"
+          />
+        </label>
+        @if (suggestions().length) {
+          <ul class="suggest" data-testid="suggestions">
+            @for (s of suggestions(); track s.offer.productKey) {
+              <li>
+                <button type="button" (click)="add(s.offer.productKey)">
+                  <span>{{ s.offer.title }}</span>
+                  <small class="muted num">desde {{ cop(s.offer.price) }}</small>
+                  <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (lists.list().length) {
+          <ul class="lines" data-testid="lines">
+            @for (l of lists.list(); track l.productKey) {
+              <li>
+                <app-thumb [category]="l.category" />
+                <a class="grow" [routerLink]="['/producto', l.productKey]">
+                  <span class="line-title">{{ l.title }}</span>
+                  <small class="muted"
+                    >{{ l.brand }} · desde
+                    {{
+                      cheapest().get(l.productKey) !== undefined
+                        ? cop(cheapest().get(l.productKey)!)
+                        : '—'
+                    }}</small
+                  >
+                </a>
+                <div class="qty">
+                  <button
+                    type="button"
+                    class="btn icon ghost"
+                    (click)="lists.setQty(l.productKey, l.qty - 1)"
+                    [attr.aria-label]="'Quitar uno de ' + l.title"
+                  >
+                    −
+                  </button>
+                  <span class="num">{{ l.qty }}</span>
+                  <button
+                    type="button"
+                    class="btn icon ghost"
+                    (click)="lists.setQty(l.productKey, l.qty + 1)"
+                    [attr.aria-label]="'Agregar uno de ' + l.title"
+                  >
+                    +
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="empty small">
+            <i class="bi bi-cart3" aria-hidden="true"></i>
+            <p>Tu lista está vacía.</p>
+            <button type="button" class="btn small" (click)="addSample()" data-testid="sample">
+              Probar con un mercado de ejemplo
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="card">
+        <h2>Opciones</h2>
+        <div class="field">
+          <span>Dividir la compra en máximo</span>
+          <div class="seg" role="radiogroup" aria-label="Máximo de tiendas">
+            @for (n of [1, 2, 3]; track n) {
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="maxStores() === n"
+                [class.on]="maxStores() === n"
+                (click)="maxStores.set(n)"
+                [attr.data-testid]="'max-' + n"
+              >
+                {{ n }} {{ n === 1 ? 'tienda' : 'tiendas' }}
+              </button>
+            }
+          </div>
+        </div>
+        @if (location.nearbyStoreIds().length) {
+          <label class="toggle">
+            <input
+              type="checkbox"
+              [checked]="nearbyOnly()"
+              (change)="nearbyOnly.set($any($event.target).checked)"
+              data-testid="nearby-only"
+            />
+            <span>Solo cadenas con sede cerca de mí ({{ location.nearbyStoreIds().length }})</span>
+          </label>
+        } @else {
+          <p class="small muted">
+            <a routerLink="/cerca">Activa tu ubicación</a> para limitar la compra a tiendas
+            cercanas.
+          </p>
+        }
+        <div class="field">
+          <span>Tiendas a considerar</span>
+          <div class="chips stores">
+            @for (id of storeIds; track id) {
+              <button
+                type="button"
+                class="chip"
+                [class.on]="!excluded().includes(id)"
+                (click)="toggleStore(id)"
+                [style.--store]="stores[id]!.color"
+                [attr.aria-pressed]="!excluded().includes(id)"
+              >
+                <i class="dot" aria-hidden="true"></i>{{ stores[id]!.name }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack" aria-live="polite">
+      @if (result().best; as best) {
+        <div class="card plan-summary" data-testid="plan">
+          <div class="summary-grid">
+            <div>
+              <span class="muted small">Total con envíos</span>
+              <b class="big num" data-testid="plan-total">{{ cop(best.total) }}</b>
+              <small class="muted"
+                >{{ best.items }} productos · {{ best.stores.length }}
+                {{ best.stores.length === 1 ? 'tienda' : 'tiendas' }} · envíos
+                {{ cop(best.shipping) }}</small
+              >
+            </div>
+            @if (result().bestSingle; as single) {
+              <div>
+                <span class="muted small">Todo en una sola tienda</span>
+                <b class="num">{{ cop(single.total) }}</b>
+                <small><app-store-chip [storeId]="single.stores[0]!" /></small>
+              </div>
+            }
+            <div class="saving" [class.zero]="!result().savings">
+              <span class="small">Ahorras dividiendo</span>
+              <b class="num" data-testid="plan-savings">{{ cop(result().savings) }}</b>
+            </div>
+          </div>
+          @if (best.missing.length) {
+            <p class="alert warn small">
+              Sin tienda para: {{ best.missing.map((k) => titles().get(k) ?? k).join(', ') }}.
+              Prueba con más tiendas.
+            </p>
+          }
+        </div>
+
+        @for (leg of best.legs; track leg.storeId) {
+          <div class="card leg" [attr.data-testid]="'leg-' + leg.storeId">
+            <div class="card-head row">
+              <h2><app-store-chip [storeId]="leg.storeId" /></h2>
+              <span class="num"
+                ><b>{{ cop(leg.subtotal + leg.shipping) }}</b></span
+              >
+            </div>
+            <ul class="leg-items">
+              @for (it of leg.items; track it.productKey) {
+                <li>
+                  <span>{{ it.qty }} × {{ it.offer.title }}</span>
+                  <app-source-tag [source]="it.offer.source" />
+                  <span class="num">{{ cop(it.subtotal) }}</span>
+                </li>
+              }
+            </ul>
+            <p class="small muted leg-foot">
+              Subtotal {{ cop(leg.subtotal) }} · Envío
+              {{ leg.shipping ? cop(leg.shipping) : 'gratis' }}
+              @if (freeShippingGap(leg.storeId, leg.subtotal); as gap) {
+                · te faltan {{ cop(gap) }} para envío gratis
+              }
+            </p>
+          </div>
+        }
+
+        <div class="card">
+          <h2>Cada tienda por separado</h2>
+          <table class="mini" data-testid="singles">
+            <tbody>
+              @for (p of result().singles; track p.stores[0]) {
+                <tr>
+                  <td><app-store-chip [storeId]="p.stores[0] ?? ''" /></td>
+                  <td class="r num">{{ cop(p.total) }}</td>
+                  <td class="small muted">
+                    {{ p.missing.length ? 'faltan ' + p.missing.length : 'completa' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="card empty">
+          <i class="bi bi-diagram-3" aria-hidden="true"></i>
+          <p>Aquí verás en qué tienda comprar cada cosa.</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>

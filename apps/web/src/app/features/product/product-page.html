@@ -1,0 +1,312 @@
+<section class="page">
+  <a class="back small" routerLink="/"
+    ><i class="bi bi-arrow-left" aria-hidden="true"></i> Ofertas</a
+  >
+
+  @if (product(); as p) {
+    <header class="product-head">
+      <app-thumb [category]="p.category" [image]="p.image" />
+      <div class="grow">
+        <h1 data-testid="product-title">{{ p.title }}</h1>
+        <p class="muted">
+          {{ p.brand }} · {{ category() }} · en {{ rows().length }}
+          {{ rows().length === 1 ? 'tienda' : 'tiendas' }}
+        </p>
+        @if (hasSimulated()) {
+          <p class="sim-note small" data-testid="sim-note">
+            <i class="bi bi-cpu" aria-hidden="true"></i> Precios simulados con un producto ficticio:
+            sirven para mostrar la comparación, no para comprar.
+          </p>
+        }
+      </div>
+      <div class="head-actions">
+        <button
+          type="button"
+          class="btn ghost"
+          (click)="toggleFav()"
+          [attr.aria-pressed]="fav()"
+          data-testid="fav"
+        >
+          <i
+            class="bi"
+            [class.bi-heart-fill]="fav()"
+            [class.bi-heart]="!fav()"
+            aria-hidden="true"
+          ></i>
+          {{ fav() ? 'Favorito' : 'Favorito' }}
+        </button>
+        <div class="qty">
+          <button
+            type="button"
+            class="btn icon ghost"
+            (click)="qty.set(Math.max(1, qty() - 1))"
+            aria-label="Menos"
+          >
+            −
+          </button>
+          <span class="num" aria-live="polite">{{ qty() }}</span>
+          <button
+            type="button"
+            class="btn icon ghost"
+            (click)="qty.set(Math.min(99, qty() + 1))"
+            aria-label="Más"
+          >
+            +
+          </button>
+        </div>
+        <button type="button" class="btn" (click)="addToList()" data-testid="add-list">
+          <i class="bi bi-cart-plus" aria-hidden="true"></i> A la lista
+        </button>
+      </div>
+    </header>
+
+    <div class="kpis">
+      @if (cheapest(); as c) {
+        <div class="kpi good">
+          <span>Más barato puesto en casa</span>
+          <b class="num" data-testid="best-landed">{{ cop(c.landed) }}</b>
+          <small><app-store-chip [storeId]="c.offer.storeId" /></small>
+        </div>
+      }
+      <div class="kpi">
+        <span>Diferencia entre tiendas</span>
+        <b class="num" data-testid="spread">{{ cop(spread()) }}</b>
+        <small class="muted">del más barato al más caro, con envío</small>
+      </div>
+      @if (selected()?.analysis.stats; as st) {
+        <div class="kpi">
+          <span>Mínimo de 90 días</span>
+          <b class="num">{{ cop(st.min90) }}</b>
+          <small class="muted">en {{ stores[selected()!.offer.storeId]?.name }}</small>
+        </div>
+        <div class="kpi">
+          <span>Precio habitual</span>
+          <b class="num">{{ cop(st.usual) }}</b>
+          <small class="muted">mediana de hace 90 a 8 días</small>
+        </div>
+      }
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Mismo producto en cada tienda</h2>
+        <p class="muted small">
+          Ordenado por precio puesto en casa (precio + envío para esta unidad). Toca una fila para
+          ver su historial.
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table class="compare" data-testid="compare-table">
+          <thead>
+            <tr>
+              <th scope="col">Tienda</th>
+              <th scope="col" class="r">Precio</th>
+              <th scope="col" class="r">Antes</th>
+              <th scope="col" class="r">Ahorro</th>
+              <th scope="col" class="r">Por unidad</th>
+              <th scope="col">Envío</th>
+              <th scope="col" class="r">Total</th>
+              <th scope="col">¿Es real?</th>
+              <th scope="col" class="r">Puntaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of rows(); track r.item.offer.id) {
+              <tr
+                [class.sel]="selected()?.offer.id === r.item.offer.id"
+                [class.best]="r.cheapest"
+                (click)="select(r.item.offer.storeId)"
+                [attr.data-testid]="'row-' + r.item.offer.storeId"
+              >
+                <td data-label="Tienda">
+                  <div class="cell-store">
+                    <button
+                      type="button"
+                      class="row-btn"
+                      (click)="select(r.item.offer.storeId); $event.stopPropagation()"
+                      [attr.aria-pressed]="selected()?.offer.id === r.item.offer.id"
+                    >
+                      <app-store-chip [storeId]="r.item.offer.storeId" />
+                    </button>
+                    <app-source-tag [source]="r.item.offer.source" />
+                    <small class="muted rating"
+                      ><i class="bi bi-star-fill star" aria-hidden="true"></i>
+                      {{ stores[r.item.offer.storeId]?.rating?.toFixed(1) }}</small
+                    >
+                  </div>
+                </td>
+                <td data-label="Precio" class="r num">
+                  <b>{{ cop(r.item.offer.price) }}</b>
+                </td>
+                <td data-label="Antes" class="r num muted">
+                  @if (r.item.offer.listPrice > r.item.offer.price) {
+                    <s>{{ cop(r.item.offer.listPrice) }}</s>
+                    <span class="off" [class.fake]="r.item.analysis.verdict === 'inflado'"
+                      >−{{ r.item.analysis.declaredPct }} %</span
+                    >
+                  } @else {
+                    —
+                  }
+                </td>
+                <td data-label="Ahorro" class="r num">
+                  {{
+                    save(r.item.offer.price, r.item.offer.listPrice)
+                      ? cop(save(r.item.offer.price, r.item.offer.listPrice))
+                      : '—'
+                  }}
+                </td>
+                <td data-label="Por unidad" class="r num muted">
+                  {{ unit(r.item.offer.price, r.item.offer.size) || '—' }}
+                </td>
+                <td data-label="Envío" class="small">
+                  @if (ship(r.item.offer.storeId, r.item.offer.price); as s) {
+                    {{ s.cost ? cop(s.cost) : 'Gratis' }} · {{ s.days }}
+                  }
+                </td>
+                <td data-label="Total" class="r num">
+                  <b>{{ cop(r.item.landed) }}</b>
+                  @if (r.cheapest) {
+                    <span class="best-tag">Mejor</span>
+                  } @else {
+                    <small class="muted">+{{ cop(r.diff) }}</small>
+                  }
+                </td>
+                <td data-label="¿Es real?"><app-verdict [verdict]="r.item.analysis.verdict" /></td>
+                <td data-label="Puntaje" class="r">
+                  <app-score-ring [score]="r.item.deal.score" [grade]="r.item.deal.grade" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @if (selected(); as s) {
+      <div class="split2">
+        <div class="card">
+          <div class="card-head row">
+            <h2>Historial en <app-store-chip [storeId]="s.offer.storeId" /></h2>
+            <app-source-tag [source]="s.offer.source" />
+          </div>
+          @if (s.offer.history && s.offer.history.length > 1) {
+            <app-price-chart
+              [points]="s.offer.history"
+              [usual]="s.analysis.usualPrice"
+              [listPrice]="s.offer.listPrice > s.offer.price ? s.offer.listPrice : null"
+            />
+          } @else {
+            <p class="muted small">
+              Aún no hay historial para esta tienda. En modo API, el backend lo va guardando con
+              cada consulta.
+            </p>
+          }
+          <h3 class="mt">¿El descuento es real?</h3>
+          <div class="verdict-box" [attr.data-v]="s.analysis.verdict" data-testid="analysis">
+            <app-verdict [verdict]="s.analysis.verdict" />
+            <ul>
+              @for (r of s.analysis.reasons; track r) {
+                <li>{{ r }}</li>
+              }
+            </ul>
+          </div>
+          @if (s.offer.url) {
+            <a
+              class="btn ghost small mt"
+              [href]="s.offer.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ver en {{ stores[s.offer.storeId]?.name }}
+              <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+            ></a>
+          } @else if (stores[s.offer.storeId]; as st) {
+            <a
+              class="btn ghost small mt"
+              [href]="st.website"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Sitio oficial de {{ st.name }}
+              <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+            ></a>
+          }
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-head row">
+              <h2>Puntaje de la oferta</h2>
+              <app-score-ring [score]="s.deal.score" [grade]="s.deal.grade" />
+            </div>
+            <ul class="bars" data-testid="score-parts">
+              @for (part of s.deal.parts; track part.key) {
+                <li>
+                  <span>{{ part.label }}</span>
+                  <span class="bar" [attr.aria-label]="part.points + ' de ' + part.max"
+                    ><i [style.width.%]="(part.points / part.max) * 100"></i
+                  ></span>
+                  <b class="num"
+                    >{{ part.points.toFixed(0) }}<small class="muted">/{{ part.max }}</small></b
+                  >
+                </li>
+              }
+            </ul>
+            @if (s.deal.capped) {
+              <p class="small warn-text">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Tope aplicado por
+                descuento {{ s.analysis.verdict }}.
+              </p>
+            }
+          </div>
+
+          <div class="card" data-testid="alert-card">
+            <div class="card-head">
+              <h2><i class="bi bi-bell" aria-hidden="true"></i> Alerta de precio</h2>
+              <p class="muted small">
+                Te marcamos el producto en “Guardados” cuando alguna tienda llegue a tu precio.
+              </p>
+            </div>
+            <form class="alert-form" (submit)="$event.preventDefault(); saveWatch()">
+              <label class="field">
+                <span>Avisarme si baja a</span>
+                <input
+                  inputmode="numeric"
+                  [value]="cop(target())"
+                  (change)="setTarget($any($event.target).value)"
+                  aria-label="Precio objetivo"
+                  data-testid="target"
+                />
+              </label>
+              <button type="submit" class="btn" data-testid="save-watch">
+                {{ watch() ? 'Actualizar alerta' : 'Crear alerta' }}
+              </button>
+            </form>
+            @if (watch(); as w) {
+              <p class="small muted">
+                Alerta activa desde {{ shortDate(w.createdAt) }} · mejor precio de hoy
+                {{ cop(bestPrice()) }}
+                <button type="button" class="link small" (click)="removeWatch()">Quitar</button>
+              </p>
+            } @else {
+              <p class="small muted">
+                Sugerido: {{ cop(suggested()) }} (mínimo de 90 días o 10 % menos que hoy).
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="empty">
+      @if (catalog.loading()) {
+        <p>Cargando…</p>
+      } @else {
+        <i class="bi bi-question-circle" aria-hidden="true"></i>
+        <p>
+          No encontramos este producto.
+          {{ catalog.mode === 'api' ? 'Búscalo de nuevo para traer sus precios.' : '' }}
+        </p>
+        <a class="btn ghost small" routerLink="/">Volver a ofertas</a>
+      }
+    </div>
+  }
+</section>

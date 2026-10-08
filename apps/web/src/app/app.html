@@ -1,0 +1,156 @@
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="topbar">
+  <div class="inner">
+    <a class="logo" routerLink="/" aria-label="Ñapa, inicio">
+      <img src="favicon.svg" alt="" width="36" height="36" />
+      <span>
+        <strong>Ñapa</strong>
+        <small>Ofertas reales en Colombia</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Secciones">
+      @for (item of nav; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
+          ariaCurrentWhenActive="page"
+          [attr.data-testid]="'nav-' + (item.path === '/' ? 'ofertas' : item.path.slice(1))"
+        >
+          <i class="bi" [class]="item.icon" aria-hidden="true"></i>
+          <span>{{ item.label }}</span>
+          @if (item.path === '/lista' && lists.listCount()) {
+            <span class="count" data-testid="list-count">{{ lists.listCount() }}</span>
+          }
+          @if (item.path === '/guardados' && triggered()) {
+            <span class="count hot" [attr.aria-label]="triggered() + ' alertas cumplidas'">{{
+              triggered()
+            }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="actions">
+      @if (apiUrl) {
+        <div class="mode-switch" role="group" aria-label="Fuente de datos">
+          <button
+            type="button"
+            [class.on]="catalog.mode === 'demo'"
+            (click)="switchMode('demo')"
+            data-testid="mode-demo"
+          >
+            Demo
+          </button>
+          <button
+            type="button"
+            [class.on]="catalog.mode === 'api'"
+            (click)="switchMode('api')"
+            data-testid="mode-api"
+          >
+            API
+          </button>
+        </div>
+      }
+      <a
+        class="brand"
+        href="https://jfredmc.github.io/portfolio/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Hecho por JFredDev: ver portafolio (se abre en otra pestaña)"
+        title="Hecho por JFredDev"
+        data-testid="brand"
+      >
+        <img src="brand/jfreddev.svg" alt="" width="22" height="22" />
+        <span>por <strong>JFredDev</strong></span>
+      </a>
+      <button
+        type="button"
+        class="btn icon ghost"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.theme() === 'dark' ? 'Usar tema claro' : 'Usar tema oscuro'"
+        [title]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema oscuro'"
+        data-testid="theme-toggle"
+      >
+        <i
+          class="bi"
+          [class.bi-sun]="theme.theme() === 'dark'"
+          [class.bi-moon-stars]="theme.theme() === 'light'"
+          aria-hidden="true"
+        ></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+@if (catalog.mode === 'demo') {
+  <div class="demo-banner" role="note" data-testid="demo-banner">
+    <div class="inner">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      <span>
+        <strong>Modo demo:</strong> todos los precios son <strong>simulados</strong> con productos y
+        marcas ficticias. No son precios reales vigentes.
+      </span>
+      <a routerLink="/fuentes">¿Por qué?</a>
+    </div>
+  </div>
+} @else {
+  <div class="demo-banner api" role="note" data-testid="api-banner">
+    <div class="inner">
+      <i class="bi bi-broadcast" aria-hidden="true"></i>
+      <span>
+        <strong>Modo API</strong> ({{ apiUrl }}): precios reales donde hay fuente permitida; el
+        resto sigue simulado y marcado en cada oferta.
+      </span>
+      <a routerLink="/fuentes">Ver fuentes</a>
+    </div>
+  </div>
+}
+
+<main id="contenido">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <div class="inner">
+    <p class="disclaimer" data-testid="disclaimer">
+      <i class="bi bi-shield-check" aria-hidden="true"></i>
+      Ñapa compara y recomienda; no vende nada ni tiene relación con las tiendas. Los nombres de las
+      tiendas son de sus dueños. Las tiendas sin API pública se muestran con datos simulados y así
+      se marcan: no se hace scraping.
+    </p>
+    <p class="muted small">
+      © {{ year }} Ñapa · Tus favoritos, alertas y lista quedan solo en este navegador. Mapa: ©
+      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer"
+        >OpenStreetMap</a
+      >
+      · ©
+      <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>
+    </p>
+  </div>
+</footer>
+
+<nav class="tabbar" aria-label="Secciones (móvil)">
+  @for (item of nav; track item.path) {
+    <a
+      [routerLink]="item.path"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: item.exact }"
+      ariaCurrentWhenActive="page"
+    >
+      <i class="bi" [class]="item.icon" aria-hidden="true"></i>
+      <span>{{ item.label }}</span>
+      @if (item.path === '/lista' && lists.listCount()) {
+        <span class="dot">{{ lists.listCount() }}</span>
+      }
+      @if (item.path === '/guardados' && triggered()) {
+        <span class="dot hot">{{ triggered() }}</span>
+      }
+    </a>
+  }
+</nav>
+
+@if (toast.message(); as msg) {
+  <div class="toast" role="status" data-testid="toast">{{ msg }}</div>
+}
