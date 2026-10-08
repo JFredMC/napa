@@ -1,0 +1,128 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Guardados</h1>
+      <p class="muted">Tus favoritos y alertas de precio. Quedan solo en este navegador.</p>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Guardados">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="current() === 'favoritos'"
+      [class.on]="current() === 'favoritos'"
+      (click)="go('favoritos')"
+      data-testid="tab-favoritos"
+    >
+      <i class="bi bi-heart" aria-hidden="true"></i> Favoritos
+      <span class="count">{{ lists.favorites().length }}</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="current() === 'alertas'"
+      [class.on]="current() === 'alertas'"
+      (click)="go('alertas')"
+      data-testid="tab-alertas"
+    >
+      <i class="bi bi-bell" aria-hidden="true"></i> Alertas
+      <span class="count">{{ lists.watches().length }}</span>
+    </button>
+  </div>
+
+  @if (current() === 'favoritos') {
+    @if (favorites().length) {
+      <ul class="saved-list" data-testid="favorites">
+        @for (f of favorites(); track f.snap.productKey) {
+          <li class="card saved-item">
+            <app-thumb [category]="f.snap.category" />
+            <a class="grow" [routerLink]="['/producto', f.snap.productKey]">
+              <b>{{ f.snap.title }}</b>
+              <small class="muted">{{ f.snap.brand }} · {{ categoryLabel[f.snap.category] }}</small>
+            </a>
+            @if (f.best; as b) {
+              <div class="saved-price">
+                <span class="num"
+                  ><b>{{ cop(b.offer.price) }}</b></span
+                >
+                <small class="muted">en <app-store-chip [storeId]="b.offer.storeId" /></small>
+                <app-source-tag [source]="b.offer.source" />
+              </div>
+            } @else {
+              <small class="muted">Sin precios cargados</small>
+            }
+            <button
+              type="button"
+              class="btn icon ghost"
+              (click)="unfav(f.snap.productKey, f.snap.title)"
+              [attr.aria-label]="'Quitar ' + f.snap.title + ' de favoritos'"
+            >
+              <i class="bi bi-heart-fill" aria-hidden="true"></i>
+            </button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="empty">
+        <i class="bi bi-heart" aria-hidden="true"></i>
+        <p>Toca el corazón en cualquier oferta para guardarla aquí.</p>
+        <a class="btn ghost small" routerLink="/">Ver ofertas</a>
+      </div>
+    }
+  } @else {
+    @if (watches().length) {
+      <ul class="saved-list" data-testid="watches">
+        @for (x of watches(); track x.w.productKey) {
+          <li
+            class="card saved-item"
+            [class.hit]="x.s.triggered"
+            [attr.data-testid]="'watch-' + x.w.productKey"
+          >
+            <app-thumb [category]="x.w.category" />
+            <a class="grow" [routerLink]="['/producto', x.w.productKey]">
+              <b>{{ x.w.title }}</b>
+              <small class="muted"
+                >Objetivo {{ cop(x.w.target) }} · creada {{ shortDate(x.w.createdAt) }} a
+                {{ cop(x.w.priceAtCreation) }}</small
+              >
+            </a>
+            <div class="saved-price">
+              @if (x.s.triggered) {
+                <span class="hit-tag" data-testid="triggered"
+                  ><i class="bi bi-bell-fill" aria-hidden="true"></i> ¡Llegó a tu precio!</span
+                >
+              }
+              @if (x.s.best; as b) {
+                <span class="num"
+                  ><b>{{ cop(b.price) }}</b></span
+                >
+                <small class="muted">en <app-store-chip [storeId]="b.storeId" /></small>
+                <app-source-tag [source]="b.source" />
+              }
+              @if (x.scored; as sc) {
+                <app-verdict [verdict]="sc.analysis.verdict" />
+              }
+            </div>
+            <button
+              type="button"
+              class="btn icon ghost"
+              (click)="removeWatch(x.w.productKey)"
+              [attr.aria-label]="'Eliminar alerta de ' + x.w.title"
+            >
+              <i class="bi bi-trash3" aria-hidden="true"></i>
+            </button>
+          </li>
+        }
+      </ul>
+      <p class="small muted">
+        Las alertas se revisan cada vez que abres Ñapa con los precios del momento.
+      </p>
+    } @else {
+      <div class="empty">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <p>Crea una alerta desde la página de cualquier producto.</p>
+      </div>
+    }
+  }
+</section>

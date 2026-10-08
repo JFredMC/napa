@@ -1,0 +1,87 @@
+<article
+  class="offer"
+  [attr.data-testid]="'offer-' + o().id"
+  [class.flagged]="item().analysis.verdict === 'inflado'"
+>
+  <div class="offer-top">
+    <app-store-chip [storeId]="o().storeId" />
+    <app-source-tag [source]="o().source" />
+    <app-score-ring [score]="item().deal.score" [grade]="item().deal.grade" />
+  </div>
+
+  <a
+    class="offer-main"
+    [routerLink]="['/producto', o().productKey]"
+    [attr.aria-label]="'Comparar ' + o().title"
+  >
+    <app-thumb [category]="o().category" [image]="o().image" />
+    <span class="offer-text">
+      <span class="offer-title">{{ o().title }}</span>
+      <span class="muted small">{{ o().brand }} · {{ category() }}</span>
+    </span>
+  </a>
+
+  <div class="offer-price">
+    <span class="price num" data-testid="price">{{ cop(o().price) }}</span>
+    @if (o().listPrice > o().price) {
+      <s class="muted num" title="Precio “antes” que muestra la tienda">{{ cop(o().listPrice) }}</s>
+      <span class="off" [class.fake]="item().analysis.verdict === 'inflado'"
+        >−{{ item().analysis.declaredPct }} %</span
+      >
+    }
+  </div>
+  <div class="offer-meta small">
+    @if (save() > 0) {
+      <span
+        >Ahorras <b class="num">{{ cop(save()) }}</b></span
+      >
+    }
+    @if (item().analysis.realPct !== null && item().analysis.verdict !== 'sin-descuento') {
+      <span class="muted">Real: {{ pct(item().analysis.realPct!, 0) }} vs. habitual</span>
+    }
+    @if (unit()) {
+      <span class="muted num" data-testid="unit-price">{{ unit() }}</span>
+    }
+  </div>
+
+  <app-verdict [verdict]="item().analysis.verdict" />
+
+  <div class="offer-foot small">
+    @if (ship(); as s) {
+      <span class="muted" title="Envío ilustrativo">
+        <i class="bi bi-truck" aria-hidden="true"></i>
+        {{ s.cost === 0 ? 'Envío gratis' : cop(s.cost) }} · {{ s.days }}
+      </span>
+    }
+    @if (store(); as st) {
+      <span class="muted" title="Calificación ilustrativa de la tienda"
+        ><i class="bi bi-star-fill star" aria-hidden="true"></i> {{ st.rating.toFixed(1) }}</span
+      >
+    }
+  </div>
+  @if (cheaperElsewhere() > 0) {
+    <p class="hint small">
+      <i class="bi bi-arrow-down-circle" aria-hidden="true"></i> {{ cop(cheaperElsewhere()) }} más
+      barato en otra tienda
+    </p>
+  }
+
+  <div class="offer-actions">
+    <button
+      type="button"
+      class="btn icon ghost"
+      (click)="toggleFav()"
+      [attr.aria-pressed]="fav()"
+      [attr.aria-label]="fav() ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+      data-testid="fav"
+    >
+      <i class="bi" [class.bi-heart-fill]="fav()" [class.bi-heart]="!fav()" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn ghost small" (click)="addToList()" data-testid="add-list">
+      <i class="bi bi-cart-plus" aria-hidden="true"></i> Lista
+    </button>
+    <a class="btn small" [routerLink]="['/producto', o().productKey]" data-testid="compare"
+      >Comparar</a
+    >
+  </div>
+</article>

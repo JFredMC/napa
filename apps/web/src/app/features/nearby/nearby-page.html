@@ -1,0 +1,172 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Tiendas cerca de ti</h1>
+      <p class="muted">
+        Supermercados y tiendas de barrio de OpenStreetMap alrededor de tu ubicación. Reconocemos
+        las cadenas que Ñapa compara y te mostramos sus ofertas.
+      </p>
+    </div>
+  </div>
+
+  @if (
+    loc.state() === 'idle' || loc.state() === 'denied' || (loc.state() === 'error' && !loc.center())
+  ) {
+    <div class="card consent" data-testid="consent">
+      <i class="bi bi-geo-alt" aria-hidden="true"></i>
+      <div>
+        <h2>¿Usamos tu ubicación?</h2>
+        <p class="muted">
+          Solo cuando tocas el botón. Se usa una vez para consultar OpenStreetMap (Overpass) y no se
+          guarda ni se envía a ningún otro lado.
+        </p>
+        @if (loc.error(); as e) {
+          <p class="alert warn small" role="alert">{{ e }}</p>
+        }
+        <div class="row-btns">
+          <button type="button" class="btn" (click)="loc.locate()" data-testid="locate">
+            <i class="bi bi-crosshair" aria-hidden="true"></i> Usar mi ubicación
+          </button>
+          <button
+            type="button"
+            class="btn ghost"
+            (click)="loc.useSample()"
+            data-testid="sample-location"
+          >
+            Probar con Chapinero, Bogotá
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="nearby-bar">
+      <div class="seg" role="radiogroup" aria-label="Radio de búsqueda">
+        @for (r of radii; track r) {
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="loc.radius() === r"
+            [class.on]="loc.radius() === r"
+            (click)="loc.setRadius(r)"
+          >
+            {{ km(r / 1000) }}
+          </button>
+        }
+      </div>
+      <span class="muted small" aria-live="polite" data-testid="nearby-status">
+        @switch (loc.state()) {
+          @case ('locating') {
+            Obteniendo tu ubicación…
+          }
+          @case ('loading') {
+            Consultando OpenStreetMap…
+          }
+          @case ('ready') {
+            {{ loc.places().length }} tiendas · {{ loc.matched().length }} de cadenas que
+            comparamos{{ loc.isSample() ? ' · ubicación de ejemplo' : '' }}
+          }
+          @case ('error') {
+            {{ loc.error() }}
+          }
+        }
+      </span>
+      <button type="button" class="btn ghost small" (click)="loc.locate()">
+        <i class="bi bi-crosshair" aria-hidden="true"></i> Mi ubicación
+      </button>
+    </div>
+
+    <div class="nearby">
+      @if (loc.center(); as c) {
+        <app-map-view
+          [center]="c"
+          [radius]="loc.radius()"
+          [places]="loc.places()"
+          [selected]="selected()"
+          (pick)="selected.set($event)"
+        />
+      }
+      <div class="stack">
+        @if (chains().length) {
+          <div class="card">
+            <h2>Cadenas cerca con ofertas</h2>
+            <ul class="chains" data-testid="chains">
+              @for (ch of chains(); track ch.id) {
+                <li>
+                  <div class="row">
+                    <app-store-chip [storeId]="ch.id" />
+                    <small class="muted"
+                      >{{ ch.sedes }} {{ ch.sedes === 1 ? 'sede' : 'sedes' }} · la más cerca a
+                      {{ km(ch.nearest) }}</small
+                    >
+                  </div>
+                  @for (b of ch.best; track b.offer.id) {
+                    <a class="mini-deal" [routerLink]="['/producto', b.offer.productKey]">
+                      <span>{{ b.offer.title }}</span>
+                      <b class="num">{{ '$' + b.offer.price.toLocaleString('es-CO') }}</b>
+                      <span class="off">−{{ b.analysis.realPct?.toFixed(0) }} %</span>
+                    </a>
+                  } @empty {
+                    <small class="muted">Sin descuentos reales hoy.</small>
+                  }
+                  <a class="link small" [routerLink]="['/']" [queryParams]="{ tiendas: ch.id }"
+                    >Ver {{ ch.count }} precios de {{ stores[ch.id]?.name }} →</a
+                  >
+                  <small class="muted"
+                    >Precios
+                    {{ catalog.mode === 'demo' ? 'simulados' : 'según la fuente de cada oferta' }};
+                    la sede es real (OpenStreetMap).</small
+                  >
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <div class="card">
+          <div class="card-head row">
+            <h2>Sedes</h2>
+            <label class="toggle small"
+              ><input
+                type="checkbox"
+                [checked]="showAll()"
+                (change)="showAll.set($any($event.target).checked)"
+              />
+              <span>Incluir otras tiendas</span></label
+            >
+          </div>
+          <ul class="places" data-testid="places">
+            @for (p of list(); track p.id) {
+              <li [class.sel]="selected() === p.id">
+                <button type="button" (click)="selected.set(p.id)">
+                  <span
+                    class="pdot"
+                    [style.--store]="p.storeId ? stores[p.storeId]?.color : '#8a94a6'"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="grow">
+                    <b>{{ p.name }}</b>
+                    <small class="muted">{{
+                      p.address ?? (p.shop === 'convenience' ? 'Tienda de barrio' : 'Supermercado')
+                    }}</small>
+                  </span>
+                  <span class="num small">{{ km(p.distanceKm) }}</span>
+                </button>
+                @if (!p.storeId) {
+                  <small class="muted nosrc">Sin fuente de ofertas</small>
+                }
+              </li>
+            } @empty {
+              <li class="muted small">
+                No encontramos tiendas de las cadenas que comparamos en este radio. Prueba con uno
+                mayor o activa “Incluir otras tiendas”.
+              </li>
+            }
+          </ul>
+          <p class="small muted">
+            Datos de sedes © colaboradores de OpenStreetMap (ODbL), vía Overpass API.
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+</section>

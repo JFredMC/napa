@@ -1,0 +1,218 @@
+<section class="page">
+  <div class="hero">
+    <div>
+      <h1>Las ofertas que <em>sí</em> son ofertas</h1>
+      <p class="muted">
+        Compara {{ stats().stores }} tiendas colombianas, detecta descuentos inflados con el
+        historial de precios y te dice dónde sale más barato, con envío incluido.
+      </p>
+    </div>
+    <form class="search" role="search" (submit)="onSearch($event, box.value)">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input
+        #box
+        type="search"
+        name="q"
+        [value]="q()"
+        placeholder="Arroz, pañales, freidora de aire…"
+        aria-label="Buscar productos"
+        autocomplete="off"
+        data-testid="search"
+      />
+      <button type="submit" class="btn">Buscar</button>
+    </form>
+    <div class="chips cats" role="group" aria-label="Categorías">
+      <button
+        type="button"
+        class="chip"
+        [class.on]="!cat()"
+        (click)="update({ cat: null })"
+        data-testid="cat-all"
+      >
+        Todas
+      </button>
+      @for (c of categories; track c) {
+        <button
+          type="button"
+          class="chip"
+          [class.on]="cat() === c"
+          (click)="update({ cat: cat() === c ? null : c })"
+          [attr.data-testid]="'cat-' + c"
+        >
+          <i class="bi" [class]="categoryIcon[c]" aria-hidden="true"></i>{{ categoryLabel[c] }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (catalog.error(); as err) {
+    <p class="alert bad" role="alert">{{ err }}</p>
+  }
+
+  @if (!filtering()) {
+    <div class="stats" data-testid="stats">
+      <div class="stat">
+        <b class="num">{{ stats().offers }}</b>
+        <span>precios analizados</span>
+        <small class="muted">{{ stats().products }} productos · {{ stats().stores }} tiendas</small>
+      </div>
+      <div class="stat">
+        <b class="num">{{ stats().discounted }}</b>
+        <span>anuncian descuento</span>
+        <small class="muted">Ahorro real medio {{ pct(stats().avgReal, 0) }}</small>
+      </div>
+      <div class="stat warn">
+        <b class="num" data-testid="inflated-count">{{ stats().inflated }}</b>
+        <span>descuentos inflados</span>
+        <small class="muted">{{ pct(stats().inflatedShare, 0) }} de los que anuncian rebaja</small>
+      </div>
+      <a class="stat link" routerLink="/fuentes">
+        <b><i class="bi bi-cpu" aria-hidden="true"></i></b>
+        <span>{{ catalog.mode === 'demo' ? 'Precios simulados' : 'Fuentes mixtas' }}</span>
+        <small class="muted">Ver qué es real y qué no</small>
+      </a>
+    </div>
+
+    <div class="section-head">
+      <h2><i class="bi bi-fire" aria-hidden="true"></i> Top de hoy</h2>
+      <p class="muted small">
+        Mayor puntaje sin descuentos inflados ni dudosos. Una oferta por producto.
+      </p>
+    </div>
+    <div class="grid offers" data-testid="top">
+      @for (item of top(); track item.offer.id) {
+        <app-offer-card [item]="item" />
+      }
+    </div>
+
+    @for (c of categories; track c) {
+      @if (byCategory().get(c); as list) {
+        <div class="section-head">
+          <h2>
+            <i class="bi" [class]="categoryIcon[c]" aria-hidden="true"></i> {{ categoryLabel[c] }}
+          </h2>
+          <button type="button" class="link small" (click)="update({ cat: c })">Ver todo</button>
+        </div>
+        <div class="grid offers">
+          @for (item of list; track item.offer.id) {
+            <app-offer-card [item]="item" />
+          }
+        </div>
+      }
+    }
+  } @else {
+    <div class="filters" [class.open]="showFilters()">
+      <div class="filters-row">
+        <label class="field inline">
+          <span>Ordenar</span>
+          <select
+            (change)="
+              update({
+                orden: $any($event.target).value === 'score' ? null : $any($event.target).value,
+              })
+            "
+            data-testid="sort"
+          >
+            @for (s of sorts; track s.id) {
+              <option [value]="s.id" [selected]="sort() === s.id">{{ s.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="field inline">
+          <span>Descuento mínimo</span>
+          <select
+            (change)="
+              update({ min: $any($event.target).value === '0' ? null : $any($event.target).value })
+            "
+            data-testid="min"
+          >
+            @for (m of [0, 10, 20, 30, 50]; track m) {
+              <option [value]="m" [selected]="minDiscount() === m">
+                {{ m ? m + ' % o más' : 'Cualquiera' }}
+              </option>
+            }
+          </select>
+        </label>
+        <label class="toggle">
+          <input
+            type="checkbox"
+            [checked]="onlyHonest()"
+            (change)="update({ honestos: $any($event.target).checked ? '1' : null })"
+            data-testid="honest"
+          />
+          <span>Ocultar descuentos inflados</span>
+        </label>
+        <label class="toggle">
+          <input
+            type="checkbox"
+            [checked]="!grouped()"
+            (change)="update({ todas: $any($event.target).checked ? '1' : null })"
+            data-testid="all-stores"
+          />
+          <span>Todas las tiendas por producto</span>
+        </label>
+        <button
+          type="button"
+          class="btn ghost small filters-btn"
+          (click)="showFilters.set(!showFilters())"
+          [attr.aria-expanded]="showFilters()"
+        >
+          <i class="bi bi-shop" aria-hidden="true"></i> Tiendas{{
+            selectedStores().length ? ' (' + selectedStores().length + ')' : ''
+          }}
+        </button>
+        <button type="button" class="link small" (click)="clear()" data-testid="clear">
+          Limpiar
+        </button>
+      </div>
+      <div class="chips stores" role="group" aria-label="Tiendas">
+        @for (id of storeIds; track id) {
+          <button
+            type="button"
+            class="chip"
+            [class.on]="selectedStores().includes(id)"
+            (click)="toggleStore(id)"
+            [style.--store]="stores[id]!.color"
+            [attr.data-testid]="'store-' + id"
+          >
+            <i class="dot" aria-hidden="true"></i>{{ stores[id]!.name }}
+          </button>
+        }
+        @if (location.nearbyStoreIds().length) {
+          <button type="button" class="chip near" (click)="onlyNearby()" data-testid="only-nearby">
+            <i class="bi bi-geo-alt" aria-hidden="true"></i> Solo cerca de mí
+          </button>
+        }
+      </div>
+    </div>
+
+    <p class="muted small results-count" data-testid="results-count" aria-live="polite">
+      @if (catalog.loading()) {
+        Buscando…
+      } @else {
+        {{ results().length }} {{ results().length === 1 ? 'resultado' : 'resultados'
+        }}{{ q() ? ' para “' + q() + '”' : '' }}
+      }
+    </p>
+    <div class="grid offers" data-testid="results">
+      @for (item of visible(); track item.offer.id) {
+        <app-offer-card [item]="item" />
+      } @empty {
+        @if (!catalog.loading()) {
+          <div class="empty">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <p>No hay ofertas con esos filtros.</p>
+            <button type="button" class="btn ghost small" (click)="clear()">Quitar filtros</button>
+          </div>
+        }
+      }
+    </div>
+    @if (results().length > visible().length) {
+      <div class="center">
+        <button type="button" class="btn ghost" (click)="more()" data-testid="more">
+          Ver más ({{ results().length - visible().length }})
+        </button>
+      </div>
+    }
+  }
+</section>

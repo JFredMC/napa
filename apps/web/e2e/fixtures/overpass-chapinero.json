@@ -1,0 +1,217 @@
+{
+  "version": 0.6,
+  "generator": "Ñapa e2e fixture: real OpenStreetMap features around Chapinero, Bogotá (via Nominatim, Oct 2026)",
+  "osm3s": {
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 4056667789,
+      "lat": 4.64867,
+      "lon": -74.060936,
+      "tags": {
+        "name": "D1",
+        "shop": "supermarket",
+        "addr:street": "Carrera 8"
+      }
+    },
+    {
+      "type": "node",
+      "id": 10605296406,
+      "lat": 4.645596,
+      "lon": -74.0637134,
+      "tags": {
+        "name": "D1",
+        "shop": "supermarket",
+        "addr:street": "Calle 59"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5230915284,
+      "lat": 4.6500185,
+      "lon": -74.0659549,
+      "tags": {
+        "name": "D1",
+        "shop": "supermarket",
+        "addr:street": "Avenida Calle 63"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3669356890,
+      "lat": 4.655924,
+      "lon": -74.0627137,
+      "tags": {
+        "name": "D1",
+        "shop": "supermarket",
+        "addr:street": "Carrera 14"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8459243617,
+      "lat": 4.6502746,
+      "lon": -74.0556787,
+      "tags": {
+        "name": "D1",
+        "shop": "supermarket",
+        "addr:street": "Carrera 4A"
+      }
+    },
+    {
+      "type": "node",
+      "id": 10713427008,
+      "lat": 4.6402755,
+      "lon": -74.0647685,
+      "tags": {
+        "name": "D1",
+        "shop": "supermarket",
+        "addr:street": "Avenida Calle 53"
+      }
+    },
+    {
+      "type": "way",
+      "id": 528178891,
+      "center": {
+        "lat": 4.6479346,
+        "lon": -74.0602982
+      },
+      "tags": {
+        "name": "Carulla",
+        "shop": "supermarket",
+        "addr:street": "Calle 63"
+      }
+    },
+    {
+      "type": "way",
+      "id": 229023673,
+      "center": {
+        "lat": 4.6552161,
+        "lon": -74.059849
+      },
+      "tags": {
+        "name": "Carulla",
+        "shop": "supermarket",
+        "addr:street": "Carrera 11"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5171860708,
+      "lat": 4.6474409,
+      "lon": -74.0637519,
+      "tags": {
+        "name": "Ara",
+        "shop": "supermarket",
+        "addr:street": "Carrera 13A"
+      }
+    },
+    {
+      "type": "node",
+      "id": 401423750,
+      "lat": 4.6448404,
+      "lon": -74.0644314,
+      "tags": {
+        "name": "Ara",
+        "shop": "supermarket",
+        "addr:street": "Carrera 13"
+      }
+    },
+    {
+      "type": "way",
+      "id": 533249021,
+      "center": {
+        "lat": 4.6413638,
+        "lon": -74.0646843
+      },
+      "tags": {
+        "name": "Ara",
+        "shop": "supermarket",
+        "addr:street": "Carrera 13A"
+      }
+    },
+    {
+      "type": "way",
+      "id": 405042519,
+      "center": {
+        "lat": 4.6500487,
+        "lon": -74.0628765
+      },
+      "tags": {
+        "name": "Olimpica",
+        "shop": "supermarket",
+        "addr:street": "Carrera 11"
+      }
+    },
+    {
+      "type": "node",
+      "id": 4824095322,
+      "lat": 4.6527749,
+      "lon": -74.0611349,
+      "tags": {
+        "name": "Olimpica",
+        "shop": "supermarket",
+        "addr:street": "Calle 67"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5173759104,
+      "lat": 4.6435447,
+      "lon": -74.0646067,
+      "tags": {
+        "name": "Olimpica",
+        "shop": "convenience",
+        "addr:street": "Carrera 13"
+      }
+    },
+    {
+      "type": "node",
+      "id": 4710701393,
+      "lat": 4.6506265,
+      "lon": -74.0670606,
+      "tags": {
+        "name": "SAO Chapinero",
+        "shop": "supermarket",
+        "addr:street": "Calle 63A"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1615705932,
+      "lat": 4.6462042,
+      "lon": -74.0609493,
+      "tags": {
+        "name": "Éxito Express",
+        "shop": "convenience",
+        "addr:street": "Avenida Carrera 7"
+      }
+    },
+    {
+      "type": "way",
+      "id": 528182702,
+      "center": {
+        "lat": 4.6426759,
+        "lon": -74.0623695
+      },
+      "tags": {
+        "name": "Exito Expresss",
+        "shop": "supermarket",
+        "addr:street": "Avenida Carrera 7"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2529942671,
+      "lat": 4.6582077,
+      "lon": -74.0618376,
+      "tags": {
+        "name": "Éxito",
+        "shop": "department_store",
+        "addr:street": "Carrera 14"
+      }
+    }
+  ]
+}
