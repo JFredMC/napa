@@ -42,19 +42,34 @@ export class MercadoLibreAuth {
       headers: { accept: 'application/json', 'content-type': 'application/x-www-form-urlencoded' },
       body: body.toString(),
     });
-    if (!res.ok) throw new ConnectorError('mercadolibre', 'no-credentials', `No se pudo renovar el token (${res.status})`);
-    const data = (await res.json()) as { access_token?: string; expires_in?: number; refresh_token?: string };
-    if (!data.access_token) throw new ConnectorError('mercadolibre', 'no-credentials', 'Respuesta sin access_token');
+    if (!res.ok)
+      throw new ConnectorError(
+        'mercadolibre',
+        'no-credentials',
+        `No se pudo renovar el token (${res.status})`,
+      );
+    const data = (await res.json()) as {
+      access_token?: string;
+      expires_in?: number;
+      refresh_token?: string;
+    };
+    if (!data.access_token)
+      throw new ConnectorError('mercadolibre', 'no-credentials', 'Respuesta sin access_token');
     // Mercado Libre rota el refresh token en cada renovación.
     if (data.refresh_token) this.creds.refreshToken = data.refresh_token;
-    this.token = { value: data.access_token, expiresAt: this.now() + (data.expires_in ?? 21_600) * 1000 };
+    this.token = {
+      value: data.access_token,
+      expiresAt: this.now() + (data.expires_in ?? 21_600) * 1000,
+    };
     return this.token.value;
   }
 }
 
 type Json = Record<string, unknown>;
-const obj = (v: unknown): Json | null => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Json) : null);
-const str = (v: unknown): string => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
+const obj = (v: unknown): Json | null =>
+  v && typeof v === 'object' && !Array.isArray(v) ? (v as Json) : null;
+const str = (v: unknown): string =>
+  typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '';
 
 /** Convierte un resultado de `/sites/MCO/search` en una oferta de Ñapa. */
 export function parseMercadoLibreItem(raw: unknown, observedAt: string): Offer | null {
@@ -110,27 +125,54 @@ export function createMercadoLibreConnector(opts: MercadoLibreOptions): StoreCon
     storeId: 'mercadolibre',
     kind: 'live',
     async search(query, signal) {
-      if (!opts.auth) throw new ConnectorError('mercadolibre', 'no-credentials', 'Falta configurar las credenciales OAuth de Mercado Libre');
+      if (!opts.auth)
+        throw new ConnectorError(
+          'mercadolibre',
+          'no-credentials',
+          'Falta configurar las credenciales OAuth de Mercado Libre',
+        );
       const token = await opts.auth.accessToken();
-      const params = new URLSearchParams({ q: query.q.trim() || 'oferta', limit: String(Math.min(query.limit ?? 24, 50)) });
+      const params = new URLSearchParams({
+        q: query.q.trim() || 'oferta',
+        limit: String(Math.min(query.limit ?? 24, 50)),
+      });
       const timeout = AbortSignal.timeout(opts.timeoutMs ?? 8000);
       let res: Response;
       try {
         res = await opts.fetch(`${ML_API}/sites/MCO/search?${params.toString()}`, {
-          headers: { accept: 'application/json', authorization: `Bearer ${token}`, 'user-agent': opts.userAgent },
+          headers: {
+            accept: 'application/json',
+            authorization: `Bearer ${token}`,
+            'user-agent': opts.userAgent,
+          },
           signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         });
       } catch (e) {
-        throw new ConnectorError('mercadolibre', 'timeout', `Sin respuesta de la API: ${(e as Error).message}`);
+        throw new ConnectorError(
+          'mercadolibre',
+          'timeout',
+          `Sin respuesta de la API: ${(e as Error).message}`,
+        );
       }
       if (res.status === 401 || res.status === 403) {
-        throw new ConnectorError('mercadolibre', 'forbidden', `La API de Mercado Libre rechazó la búsqueda (${res.status})`);
+        throw new ConnectorError(
+          'mercadolibre',
+          'forbidden',
+          `La API de Mercado Libre rechazó la búsqueda (${res.status})`,
+        );
       }
-      if (!res.ok) throw new ConnectorError('mercadolibre', 'http', `La API de Mercado Libre respondió ${res.status}`);
+      if (!res.ok)
+        throw new ConnectorError(
+          'mercadolibre',
+          'http',
+          `La API de Mercado Libre respondió ${res.status}`,
+        );
       const data = obj(await res.json());
       const observedAt = now().toISOString();
       const results = Array.isArray(data?.['results']) ? data['results'] : [];
-      const offers = results.map((r) => parseMercadoLibreItem(r, observedAt)).filter((o): o is Offer => !!o);
+      const offers = results
+        .map((r) => parseMercadoLibreItem(r, observedAt))
+        .filter((o): o is Offer => !!o);
       return query.category ? offers.filter((o) => o.category === query.category) : offers;
     },
   };

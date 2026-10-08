@@ -1,8 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { MercadoLibreAuth, createMercadoLibreConnector, parseMercadoLibreItem } from './mercadolibre';
+import {
+  MercadoLibreAuth,
+  createMercadoLibreConnector,
+  parseMercadoLibreItem,
+} from './mercadolibre';
 
-const fixture = JSON.parse(readFileSync(new URL('./fixtures/ml-search.json', import.meta.url), 'utf8')) as { results: unknown[] };
+const fixture = JSON.parse(
+  readFileSync(new URL('./fixtures/ml-search.json', import.meta.url), 'utf8'),
+) as { results: unknown[] };
 const AT = '2026-10-07T13:00:00.000Z';
 
 describe('adaptador Mercado Libre', () => {
@@ -35,17 +41,30 @@ describe('adaptador Mercado Libre', () => {
 
   it('busca con Bearer y marca 403 como bloqueado', async () => {
     const fetch = vi.fn(async () => new Response(JSON.stringify(fixture)));
-    const c = createMercadoLibreConnector({ auth: { accessToken: async () => 'TOKEN' }, fetch, userAgent: 'x' });
+    const c = createMercadoLibreConnector({
+      auth: { accessToken: async () => 'TOKEN' },
+      fetch,
+      userAgent: 'x',
+    });
     expect(await c.search({ q: 'freidora' })).toHaveLength(2);
     const init = (fetch.mock.calls[0] as unknown as [string, RequestInit])[1];
     expect((init.headers as Record<string, string>)['authorization']).toBe('Bearer TOKEN');
-    const denied = createMercadoLibreConnector({ auth: { accessToken: async () => 'T' }, fetch: async () => new Response('{}', { status: 403 }), userAgent: 'x' });
+    const denied = createMercadoLibreConnector({
+      auth: { accessToken: async () => 'T' },
+      fetch: async () => new Response('{}', { status: 403 }),
+      userAgent: 'x',
+    });
     await expect(denied.search({ q: 'a' })).rejects.toMatchObject({ code: 'forbidden' });
   });
 
   it('renueva el token, lo reutiliza y guarda el refresh token rotado', async () => {
     let t = 0;
-    const fetch = vi.fn(async () => new Response(JSON.stringify({ access_token: `A${++t}`, expires_in: 21600, refresh_token: `R${t}` })));
+    const fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ access_token: `A${++t}`, expires_in: 21600, refresh_token: `R${t}` }),
+        ),
+    );
     let now = 0;
     const creds = { clientId: 'id', clientSecret: 's', refreshToken: 'R0' };
     const auth = new MercadoLibreAuth(creds, fetch, () => now);

@@ -55,8 +55,16 @@ export function parseSize(title: string): Size | null {
   const packAfter = new RegExp(`${NUM}\\s*${UNIT}\\s*x\\s*(\\d+)(?=\\s|$)`).exec(t);
   if (packAfter?.[1] && packAfter[2])
     return toBase(parseAmount(packAfter[1]) * Number(packAfter[3]), packAfter[2]);
-  const single = new RegExp(`(?:^|\\s)${NUM}\\s*${UNIT}(?=\\s|$)`).exec(t);
-  if (single?.[1] && single[2]) return toBase(parseAmount(single[1]), single[2]);
+  const single = new RegExp(`(?:^|\\s)(?:x\\s*)?${NUM}\\s*${UNIT}(?=\\s|$)`).exec(t);
+  if (single?.[1] && single[2]) {
+    // "x 160g x 4und" o "3und x 80g": el conteo de unidades multiplica el contenido.
+    const rest = t.slice(0, single.index) + ' ' + t.slice(single.index + single[0].length);
+    const units = new RegExp(`(?:^|\\s)x?\\s*(\\d+)\\s*(?:und|unds|unidades|un|uds)(?=\\s|$)`).exec(
+      rest,
+    );
+    const count = units ? Number(units[1]) : 1;
+    return toBase(parseAmount(single[1]) * (count > 0 && count <= 48 ? count : 1), single[2]);
+  }
   // "x 12 rollos", "50 unidades" o "x30" (sin palabra solo desde 3: "X2" suele ser un modelo).
   const worded =
     new RegExp(`(?:^|\\s)x\\s*(\\d+)\\s*${COUNT}(?=\\s|$)`).exec(t) ??

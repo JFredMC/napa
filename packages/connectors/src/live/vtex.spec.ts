@@ -1,14 +1,63 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { ConnectorError } from '../connector';
-import { createVtexConnector, parseVtexProduct, vtexSearchPath } from './vtex';
+import { createVtexConnector, parseVtexProduct, vtexSearchPaths, vtexWords } from './vtex';
 
-const fixture = JSON.parse(readFileSync(new URL('./fixtures/vtex-search.json', import.meta.url), 'utf8')) as unknown[];
+const fixture = JSON.parse(
+  readFileSync(new URL('./fixtures/vtex-search.json', import.meta.url), 'utf8'),
+) as unknown[];
 const AT = '2026-10-07T13:00:00.000Z';
 
 describe('adaptador VTEX', () => {
-  it('arma la ruta de búsqueda acotada', () => {
-    expect(vtexSearchPath({ q: 'atún agua', limit: 100 })).toBe('/api/catalog_system/pub/products/search?ft=at%C3%BAn+agua&_from=0&_to=49');
+  it('arma rutas candidatas sin tildes ni "+"', () => {
+    expect(vtexWords('  Atún en AGUA, 160g ')).toEqual(['atun', 'en', 'agua', '160g']);
+    expect(vtexWords('¿?')).toEqual(['oferta']);
+    expect(vtexSearchPaths({ q: 'atún agua', limit: 100 })).toEqual([
+      '/api/catalog_system/pub/products/search?ft=atun%20agua&_from=0&_to=49',
+      '/api/catalog_system/pub/products/search?ft=atun%20agua',
+      '/api/catalog_system/pub/products/search?ft=atun',
+    ]);
+    expect(vtexSearchPaths({ q: 'arroz' })).toHaveLength(2);
+  });
+
+  it('con la ruta de una palabra filtra por todas las palabras', async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify(fixture), { status: 206 }));
+    const c = createVtexConnector({
+      storeId: 'x',
+      origin: 'https://tienda.example',
+      fetch,
+      userAgent: 'u',
+      choosePath: async (p) => p[2] ?? null,
+    });
+    const offers = await c.search({ q: 'arroz cosecha' });
+    expect((fetch.mock.calls[0] as unknown as [string])[0]).toBe(
+      'https://tienda.example/api/catalog_system/pub/products/search?ft=cosecha',
+    );
+    expect(offers.map((o) => o.id)).toEqual(['x-900001']);
+  });
+
+  it('respeta la ruta elegida y no pide nada si ninguna está permitida', async () => {
+    const fetch = vi.fn(async () => new Response('[]', { status: 206 }));
+    const simple = createVtexConnector({
+      storeId: 'x',
+      origin: 'https://t.example',
+      fetch,
+      userAgent: 'u',
+      choosePath: async (c) => c[1] ?? null,
+    });
+    await simple.search({ q: 'arroz' });
+    expect((fetch.mock.calls[0] as unknown as [string])[0]).toBe(
+      'https://t.example/api/catalog_system/pub/products/search?ft=arroz',
+    );
+    const none = createVtexConnector({
+      storeId: 'x',
+      origin: 'https://t.example',
+      fetch,
+      userAgent: 'u',
+      choosePath: async () => null,
+    });
+    await expect(none.search({ q: 'arroz' })).rejects.toMatchObject({ code: 'robots' });
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('toma el vendedor disponible más barato, precio antes, tamaño, imagen y enlace', () => {
@@ -44,12 +93,20 @@ describe('adaptador VTEX', () => {
 
   it('busca con User-Agent propio y sin seguir redirecciones', async () => {
     const fetch = vi.fn(async () => new Response(JSON.stringify(fixture), { status: 206 }));
-    const c = createVtexConnector({ storeId: 'jumbo', origin: 'https://tienda.example', fetch, userAgent: 'NapaBot/0.1', now: () => new Date(AT) });
+    const c = createVtexConnector({
+      storeId: 'jumbo',
+      origin: 'https://tienda.example',
+      fetch,
+      userAgent: 'NapaBot/0.1',
+      now: () => new Date(AT),
+    });
     const offers = await c.search({ q: 'arroz' });
     expect(offers).toHaveLength(2);
     expect(c.kind).toBe('live');
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('https://tienda.example/api/catalog_system/pub/products/search?ft=arroz&_from=0&_to=23');
+    expect(url).toBe(
+      'https://tienda.example/api/catalog_system/pub/products/search?ft=arroz&_from=0&_to=23',
+    );
     expect((init.headers as Record<string, string>)['user-agent']).toBe('NapaBot/0.1');
     expect(init.redirect).toBe('error');
     expect(await c.search({ q: 'arroz', category: 'lacteos' })).toHaveLength(1);
@@ -57,10 +114,23 @@ describe('adaptador VTEX', () => {
 
   it('errores tipados', async () => {
     const make = (res: () => Promise<Response>) =>
-      createVtexConnector({ storeId: 'jumbo', origin: 'https://tienda.example', fetch: res, userAgent: 'x' });
-    await expect(make(async () => new Response('', { status: 403 })).search({ q: 'a' })).rejects.toMatchObject({ code: 'forbidden' });
-    await expect(make(async () => new Response('', { status: 500 })).search({ q: 'a' })).rejects.toMatchObject({ code: 'http' });
-    await expect(make(async () => new Response('no json', { status: 200 })).search({ q: 'a' })).rejects.toMatchObject({ code: 'parse' });
-    await expect(make(async () => Promise.reject(new Error('boom'))).search({ q: 'a' })).rejects.toBeInstanceOf(ConnectorError);
+      createVtexConnector({
+        storeId: 'jumbo',
+        origin: 'https://tienda.example',
+        fetch: res,
+        userAgent: 'x',
+      });
+    await expect(
+      make(async () => new Response('', { status: 403 })).search({ q: 'a' }),
+    ).rejects.toMatchObject({ code: 'forbidden' });
+    await expect(
+      make(async () => new Response('', { status: 500 })).search({ q: 'a' }),
+    ).rejects.toMatchObject({ code: 'http' });
+    await expect(
+      make(async () => new Response('no json', { status: 200 })).search({ q: 'a' }),
+    ).rejects.toMatchObject({ code: 'parse' });
+    await expect(
+      make(async () => Promise.reject(new Error('boom'))).search({ q: 'a' }),
+    ).rejects.toBeInstanceOf(ConnectorError);
   });
 });

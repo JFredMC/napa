@@ -47,12 +47,18 @@ export function isAllowedByRobots(robots: string, userAgent: string, path: strin
   const groups = parseGroups(robots);
   const ua = userAgent.toLowerCase();
   const product = ua.split('/')[0] ?? ua;
-  const name = [...groups.keys()].filter((a) => a !== '*' && product.includes(a)).sort((a, b) => b.length - a.length)[0];
+  const name = [...groups.keys()]
+    .filter((a) => a !== '*' && product.includes(a))
+    .sort((a, b) => b.length - a.length)[0];
   const rules = groups.get(name ?? '*') ?? [];
   let best: Rule | null = null;
   for (const rule of rules) {
     if (!toRegExp(rule.pattern).test(path)) continue;
-    if (!best || rule.pattern.length > best.pattern.length || (rule.pattern.length === best.pattern.length && rule.allow)) {
+    if (
+      !best ||
+      rule.pattern.length > best.pattern.length ||
+      (rule.pattern.length === best.pattern.length && rule.allow)
+    ) {
       best = rule;
     }
   }

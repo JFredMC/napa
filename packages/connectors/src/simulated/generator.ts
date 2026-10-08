@@ -18,12 +18,22 @@ export interface StoreProfile {
 }
 
 export const HISTORY_DAYS = 120;
-const GROCERY = new Set<CategoryId>(['despensa', 'lacteos', 'bebidas', 'aseo-hogar', 'cuidado-personal', 'bebe', 'mascotas']);
+const GROCERY = new Set<CategoryId>([
+  'despensa',
+  'lacteos',
+  'bebidas',
+  'aseo-hogar',
+  'cuidado-personal',
+  'bebe',
+  'mascotas',
+]);
 const DAY = 86_400_000;
 
 function dates(today: string, n: number): string[] {
   const end = Date.parse(`${today}T00:00:00Z`);
-  return Array.from({ length: n }, (_, i) => new Date(end - (n - 1 - i) * DAY).toISOString().slice(0, 10));
+  return Array.from({ length: n }, (_, i) =>
+    new Date(end - (n - 1 - i) * DAY).toISOString().slice(0, 10),
+  );
 }
 
 export function carries(storeId: string, t: ProductTemplate): boolean {
@@ -36,7 +46,12 @@ export function carries(storeId: string, t: ProductTemplate): boolean {
  * precio que se mueve poco, promos esporádicas y, al final, uno de tres escenarios
  * (promo real, descuento inflado o precio normal). Determinista por tienda, producto y día.
  */
-export function simulateOffer(storeId: string, t: ProductTemplate, profile: StoreProfile, today: string): Offer {
+export function simulateOffer(
+  storeId: string,
+  t: ProductTemplate,
+  profile: StoreProfile,
+  today: string,
+): Offer {
   const rng = seeded(`${storeId}:${t.key}`);
   const regular = t.base * profile.factor * (1 + between(rng, -profile.spread, profile.spread));
   const days = dates(today, HISTORY_DAYS);
@@ -85,14 +100,18 @@ export function simulateOffer(storeId: string, t: ProductTemplate, profile: Stor
     // A veces hubo una promo más profunda hace unas semanas: la de hoy es real, pero no el mínimo.
     if (rng() < 0.45) {
       const start = last - Math.floor(between(rng, 20, 80));
-      for (let i = start; i < start + 5; i += 1) raw[i] = regular * (1 - Math.min(depth + 0.06, 0.6));
+      for (let i = start; i < start + 5; i += 1)
+        raw[i] = regular * (1 - Math.min(depth + 0.06, 0.6));
     }
     listPrice = regular;
   } else {
     listPrice = raw[last] ?? regular;
   }
 
-  const history: PricePoint[] = days.map((date, i) => ({ date, price: shelfPrice(raw[i] ?? regular) }));
+  const history: PricePoint[] = days.map((date, i) => ({
+    date,
+    price: shelfPrice(raw[i] ?? regular),
+  }));
   const price = history[last]?.price ?? shelfPrice(regular);
   const list = Math.max(price, shelfPrice(listPrice));
   const size = GROCERY.has(t.category) ? parseSize(t.title) : null;
@@ -116,7 +135,9 @@ export function simulateOffer(storeId: string, t: ProductTemplate, profile: Stor
 
 /** Todas las ofertas simuladas de una tienda para un día. */
 export function simulateStore(storeId: string, profile: StoreProfile, today: string): Offer[] {
-  return CATALOG.filter((t) => carries(storeId, t)).map((t) => simulateOffer(storeId, t, profile, today));
+  return CATALOG.filter((t) => carries(storeId, t)).map((t) =>
+    simulateOffer(storeId, t, profile, today),
+  );
 }
 
 /** Fecha de hoy en Colombia (UTC−5), YYYY-MM-DD. */

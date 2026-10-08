@@ -7,7 +7,8 @@ import { shelfPrice } from './random';
 import { SIMULATED_PROFILES, simulatedConnectors } from './stores/index';
 
 const DAY = '2026-10-07';
-const all = (): Offer[] => STORE_IDS.flatMap((id) => simulateStore(id, SIMULATED_PROFILES[id]!, DAY));
+const all = (): Offer[] =>
+  STORE_IDS.flatMap((id) => simulateStore(id, SIMULATED_PROFILES[id]!, DAY));
 
 describe('tiendas simuladas', () => {
   it('un adaptador simulado por tienda, todos marcados como simulados', async () => {
@@ -22,7 +23,9 @@ describe('tiendas simuladas', () => {
   });
 
   it('determinista: misma tienda y día, mismos precios', () => {
-    expect(simulateStore('exito', SIMULATED_PROFILES['exito']!, DAY)).toEqual(simulateStore('exito', SIMULATED_PROFILES['exito']!, DAY));
+    expect(simulateStore('exito', SIMULATED_PROFILES['exito']!, DAY)).toEqual(
+      simulateStore('exito', SIMULATED_PROFILES['exito']!, DAY),
+    );
   });
 
   it('historial de 120 días que termina hoy y coincide con el precio actual', () => {
@@ -37,7 +40,10 @@ describe('tiendas simuladas', () => {
   it('cada producto existe en al menos dos tiendas (para comparar)', () => {
     const offers = all();
     for (const t of CATALOG) {
-      expect(new Set(offers.filter((o) => o.productKey === t.key).map((o) => o.storeId)).size, t.key).toBeGreaterThanOrEqual(2);
+      expect(
+        new Set(offers.filter((o) => o.productKey === t.key).map((o) => o.storeId)).size,
+        t.key,
+      ).toBeGreaterThanOrEqual(2);
     }
   });
 
@@ -51,22 +57,42 @@ describe('tiendas simuladas', () => {
 
   it('Temu y Shein inflan más que el Éxito; D1 es más barato que Carulla', () => {
     const rate = (store: string) => {
-      const offers = simulateStore(store, SIMULATED_PROFILES[store]!, DAY).filter((o) => o.listPrice > o.price);
-      return offers.filter((o) => analyzeDiscount(o).verdict === 'inflado').length / Math.max(offers.length, 1);
+      const offers = simulateStore(store, SIMULATED_PROFILES[store]!, DAY).filter(
+        (o) => o.listPrice > o.price,
+      );
+      return (
+        offers.filter((o) => analyzeDiscount(o).verdict === 'inflado').length /
+        Math.max(offers.length, 1)
+      );
     };
     expect(rate('temu')).toBeGreaterThan(rate('exito'));
     const avg = (store: string, keys: Set<string>) => {
-      const offers = simulateStore(store, SIMULATED_PROFILES[store]!, DAY).filter((o) => keys.has(o.productKey));
-      return offers.reduce((s, o) => s + o.history!.reduce((t, p) => t + p.price, 0) / o.history!.length, 0) / offers.length;
+      const offers = simulateStore(store, SIMULATED_PROFILES[store]!, DAY).filter((o) =>
+        keys.has(o.productKey),
+      );
+      return (
+        offers.reduce(
+          (s, o) => s + o.history!.reduce((t, p) => t + p.price, 0) / o.history!.length,
+          0,
+        ) / offers.length
+      );
     };
-    const shared = new Set(simulateStore('d1', SIMULATED_PROFILES['d1']!, DAY).map((o) => o.productKey).filter((k) => simulateStore('carulla', SIMULATED_PROFILES['carulla']!, DAY).some((o) => o.productKey === k)));
+    const shared = new Set(
+      simulateStore('d1', SIMULATED_PROFILES['d1']!, DAY)
+        .map((o) => o.productKey)
+        .filter((k) =>
+          simulateStore('carulla', SIMULATED_PROFILES['carulla']!, DAY).some(
+            (o) => o.productKey === k,
+          ),
+        ),
+    );
     expect(avg('d1', shared)).toBeLessThan(avg('carulla', shared) * 0.9);
   });
 
   it('busca por texto y categoría', async () => {
     const [ml] = simulatedConnectors(() => DAY);
     expect((await ml!.search({ q: 'freidora' })).map((o) => o.productKey)).toEqual(['freidora-5l']);
-    expect((await ml!.search({ q: '', category: 'moda', limit: 2 }))).toHaveLength(2);
+    expect(await ml!.search({ q: '', category: 'moda', limit: 2 })).toHaveLength(2);
   });
 
   it('precios de góndola y fecha de Bogotá', () => {

@@ -24,6 +24,11 @@ describe('parseSize', () => {
     ['Huevos rojos AA x30', { amount: 30, unit: 'u' }],
     ['Panela 2 libras', { amount: 1000, unit: 'g' }],
     ['Paca agua 6×600 ml', { amount: 3600, unit: 'ml' }],
+    ['Arroz Roa x5kg', { amount: 5000, unit: 'g' }],
+    ['Atún en agua x 160g x 4und', { amount: 640, unit: 'g' }],
+    ['Atún en agua x3und x80g c-u', { amount: 240, unit: 'g' }],
+    ['Atún agua 3und x 80g', { amount: 240, unit: 'g' }],
+    ['Aceite x 900 ml', { amount: 900, unit: 'ml' }],
   ])('%s', (title, expected) => {
     expect(parseSize(title)).toEqual(expected);
   });

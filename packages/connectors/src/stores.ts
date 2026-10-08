@@ -1,7 +1,8 @@
 import type { CategoryId, StoreInfo } from '@napa/deals-engine';
 import type { BrandRule } from '@napa/deals-engine';
 
-export type StoreKind = 'supermercado' | 'descuento' | 'marketplace' | 'tecnologia' | 'departamentos' | 'moda';
+export type StoreKind =
+  'supermercado' | 'descuento' | 'marketplace' | 'tecnologia' | 'departamentos' | 'moda';
 
 /**
  * Qué fuente usa cada tienda:
@@ -19,6 +20,11 @@ export interface StoreMeta extends StoreInfo {
   liveSource: LiveSource;
   /** Origen del catálogo VTEX, si aplica. */
   vtexOrigin?: string;
+  /**
+   * Prefijos que Ñapa trata como prohibidos aunque el robots.txt, por cómo está escrito, no
+   * los aplique al grupo `*` (la intención de la tienda es clara y se respeta).
+   */
+  respectDisallow?: readonly string[];
   /** Por qué la fuente es real, está bloqueada o es simulada. */
   sourceNote: string;
   /** Nombres en OpenStreetMap para reconocer sedes cercanas. Vacío = solo en línea. */
@@ -26,7 +32,15 @@ export interface StoreMeta extends StoreInfo {
   categories: readonly CategoryId[];
 }
 
-const GROCERY: CategoryId[] = ['despensa', 'lacteos', 'bebidas', 'aseo-hogar', 'cuidado-personal', 'bebe', 'mascotas'];
+const GROCERY: CategoryId[] = [
+  'despensa',
+  'lacteos',
+  'bebidas',
+  'aseo-hogar',
+  'cuidado-personal',
+  'bebe',
+  'mascotas',
+];
 
 /**
  * Las tiendas son reales; en la demo, sus precios, calificaciones y condiciones de envío son
@@ -46,7 +60,18 @@ export const STORES: Record<string, StoreMeta> = {
     sourceNote:
       'API oficial de Mercado Libre. La búsqueda exige un token OAuth de una aplicación registrada; sin token responde 403, así que sin credenciales queda simulada.',
     osm: [],
-    categories: ['despensa', 'aseo-hogar', 'cuidado-personal', 'bebe', 'mascotas', 'tecnologia', 'electrohogar', 'hogar', 'moda', 'belleza'],
+    categories: [
+      'despensa',
+      'aseo-hogar',
+      'cuidado-personal',
+      'bebe',
+      'mascotas',
+      'tecnologia',
+      'electrohogar',
+      'hogar',
+      'moda',
+      'belleza',
+    ],
   },
   exito: {
     id: 'exito',
@@ -59,8 +84,9 @@ export const STORES: Record<string, StoreMeta> = {
     shipping: { cost: 7900, freeFrom: 150000, minDays: 0, maxDays: 1, pickup: true },
     liveSource: 'vtex',
     vtexOrigin: 'https://www.exito.com',
+    respectDisallow: ['/api/'],
     sourceNote:
-      'Corre sobre VTEX y su catálogo responde en público, pero su robots.txt prohíbe /api/. Ñapa lo respeta: el adaptador existe y el backend lo deja apagado mientras esa regla siga.',
+      'Corre sobre VTEX y su catálogo responde en público, pero su robots.txt declara "Disallow: /api/" en su sección de APIs. Por cómo está escrito el archivo, esa línea técnicamente solo aplica a un bot; Ñapa respeta la intención: el adaptador existe y el backend no lo usa.',
     osm: ['Éxito', 'Exito', 'Éxito Express', 'Almacenes Éxito'],
     categories: [...GROCERY, 'tecnologia', 'electrohogar', 'hogar', 'moda'],
   },
@@ -75,6 +101,7 @@ export const STORES: Record<string, StoreMeta> = {
     shipping: { cost: 8900, freeFrom: 180000, minDays: 0, maxDays: 1, pickup: true },
     liveSource: 'vtex',
     vtexOrigin: 'https://www.carulla.com',
+    respectDisallow: ['/api/'],
     sourceNote:
       'Misma plataforma que Éxito (VTEX) y la misma regla en robots.txt (Disallow: /api/). El adaptador queda apagado.',
     osm: ['Carulla', 'Carulla Fresh Market', 'Carulla Express'],
@@ -108,7 +135,7 @@ export const STORES: Record<string, StoreMeta> = {
     liveSource: 'vtex',
     vtexOrigin: 'https://www.olimpica.com',
     sourceNote:
-      'Catálogo público de VTEX. Su robots.txt bloquea las páginas de búsqueda (/busca) pero no la API de catálogo; el backend la consulta con caché y límite de ritmo.',
+      'Catálogo público de VTEX. Su robots.txt bloquea /busca y cualquier URL con "&" o "%", así que el backend consulta la API de catálogo con una sola variable (?ft=arroz+blanco), sin tildes ni paginación, con caché y límite de ritmo.',
     osm: ['Olímpica', 'Olimpica', 'SAO', 'Superalmacenes Olímpica', 'Supertiendas Olímpica'],
     categories: [...GROCERY, 'tecnologia', 'electrohogar', 'hogar'],
   },
@@ -122,7 +149,8 @@ export const STORES: Record<string, StoreMeta> = {
     ratingCount: 52_000,
     shipping: { cost: 5900, freeFrom: 90000, minDays: 0, maxDays: 1, pickup: true },
     liveSource: 'none',
-    sourceNote: 'No ofrece una API pública de catálogo. Ñapa no hace scraping: sus precios son simulados.',
+    sourceNote:
+      'No ofrece una API pública de catálogo. Ñapa no hace scraping: sus precios son simulados.',
     osm: ['D1', 'Tiendas D1', 'Tienda D1'],
     categories: GROCERY,
   },
@@ -164,7 +192,8 @@ export const STORES: Record<string, StoreMeta> = {
     ratingCount: 47_000,
     shipping: { cost: 9900, freeFrom: 99900, minDays: 2, maxDays: 5 },
     liveSource: 'none',
-    sourceNote: 'Su API es solo para vendedores (Seller Center), no para consultar el catálogo. Precios simulados.',
+    sourceNote:
+      'Su API es solo para vendedores (Seller Center), no para consultar el catálogo. Precios simulados.',
     osm: ['Falabella'],
     categories: ['tecnologia', 'electrohogar', 'hogar', 'moda', 'belleza'],
   },
@@ -178,7 +207,8 @@ export const STORES: Record<string, StoreMeta> = {
     ratingCount: 120_000,
     shipping: { cost: 11900, freeFrom: 149000, minDays: 6, maxDays: 12 },
     liveSource: 'none',
-    sourceNote: 'Sin API pública y sus términos prohíben la extracción automatizada. Precios simulados.',
+    sourceNote:
+      'Sin API pública y sus términos prohíben la extracción automatizada. Precios simulados.',
     osm: [],
     categories: ['moda', 'belleza', 'hogar'],
   },
@@ -192,7 +222,8 @@ export const STORES: Record<string, StoreMeta> = {
     ratingCount: 95_000,
     shipping: { cost: 0, minDays: 7, maxDays: 15 },
     liveSource: 'none',
-    sourceNote: 'Sin API pública y sus términos prohíben la extracción automatizada. Precios simulados.',
+    sourceNote:
+      'Sin API pública y sus términos prohíben la extracción automatizada. Precios simulados.',
     osm: [],
     categories: ['tecnologia', 'hogar', 'moda', 'belleza'],
   },

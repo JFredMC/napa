@@ -5,14 +5,26 @@ const RULES: [RegExp, CategoryId][] = [
   [/bebida|gaseosa|jugo|agua|cerveza|licor|vino|cafe listo|te /, 'bebidas'],
   [/mascota|perro|gato|concentrado/, 'mascotas'],
   [/bebe|panal|toallita|infantil/, 'bebe'],
-  [/aseo|limpieza|detergente|lavaloza|suavizante|papel higienico|desinfect|hogar y limpieza/, 'aseo-hogar'],
+  [
+    /aseo|limpieza|detergente|lavaloza|suavizante|papel higienico|desinfect|hogar y limpieza/,
+    'aseo-hogar',
+  ],
   [/cuidado personal|shampoo|jabon|crema dental|desodorante|higiene/, 'cuidado-personal'],
   [/belleza|maquillaje|dermo|facial|perfume/, 'belleza'],
-  [/tecnologia|celular|computador|portatil|televisor|audio|video|consola|tablet|smartwatch/, 'tecnologia'],
-  [/electrodomestico|electrohogar|licuadora|freidora|cafetera|nevera|lavadora|cocina electr/, 'electrohogar'],
+  [
+    /tecnologia|celular|computador|portatil|televisor|audio|video|consola|tablet|smartwatch/,
+    'tecnologia',
+  ],
+  [
+    /electrodomestico|electrohogar|licuadora|freidora|cafetera|nevera|lavadora|cocina electr/,
+    'electrohogar',
+  ],
   [/moda|ropa|calzado|zapato|tenis|vestuario/, 'moda'],
   [/hogar|cama|bano|decoracion|menaje|muebles/, 'hogar'],
-  [/mercado|despensa|supermercado|abarrote|granos|aceite|arroz|pasta|enlatado|snack|dulce/, 'despensa'],
+  [
+    /mercado|despensa|supermercado|abarrote|granos|aceite|arroz|pasta|enlatado|snack|dulce/,
+    'despensa',
+  ],
 ];
 
 function match(text: string): CategoryId | null {
