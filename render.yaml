@@ -8,7 +8,8 @@ services:
     plan: free
     region: oregon
     branch: main
-    autoDeploy: true
+    # Despliega solo cuando el CI de main pasa.
+    autoDeployTrigger: checksPass
     # Se instala desde la raíz del monorepo (lockfile y paquetes compartidos) y solo se construye la API.
     buildCommand: >-
       pnpm install --frozen-lockfile --prod=false --filter @napa/api... &&
