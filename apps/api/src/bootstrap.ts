@@ -17,8 +17,8 @@ export async function createApp(deps: AppDeps = {}): Promise<INestApplication> {
 export async function bootstrap(): Promise<void> {
   const config = loadConfig();
   const app = await createApp({ config });
-  await app.listen(config.port);
+  await app.listen(config.port, '0.0.0.0');
   new Logger('Ñapa').log(
-    `API en http://localhost:${config.port}/api · tiendas en vivo: ${config.liveStores.join(', ') || 'ninguna'}${config.mercadoLibre ? ' + Mercado Libre' : ''}`,
+    `API en el puerto ${config.port} (/api) · tiendas en vivo: ${config.liveStores.join(', ') || 'ninguna'}${config.mercadoLibre ? ' + Mercado Libre' : ''}`,
   );
 }

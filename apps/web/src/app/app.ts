@@ -22,6 +22,11 @@ export class App {
   protected readonly year = new Date().getFullYear();
   protected readonly switchMode = switchMode;
 
+  /** Tras una caída, vuelve a intentar el modo API (recarga para empezar limpio). */
+  protected retry(): void {
+    switchMode('api');
+  }
+
   /** Alertas cumplidas (precio objetivo alcanzado). */
   protected readonly triggered = computed(
     () =>

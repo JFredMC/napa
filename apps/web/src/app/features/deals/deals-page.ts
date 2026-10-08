@@ -126,7 +126,8 @@ export class DealsPage {
   constructor() {
     // Modo API: cada búsqueda va al backend (con caché allá).
     effect(() => {
-      if (this.catalog.mode === 'api') void this.catalog.search(this.q(), this.cat() ?? undefined);
+      if (this.catalog.connection() === 'ready')
+        void this.catalog.search(this.q(), this.cat() ?? undefined);
     });
     effect(() => {
       this.results();

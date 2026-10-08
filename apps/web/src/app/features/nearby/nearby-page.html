@@ -113,8 +113,9 @@
                   >
                   <small class="muted"
                     >Precios
-                    {{ catalog.mode === 'demo' ? 'simulados' : 'según la fuente de cada oferta' }};
-                    la sede es real (OpenStreetMap).</small
+                    {{
+                      catalog.mode() === 'demo' ? 'simulados' : 'según la fuente de cada oferta'
+                    }}; la sede es real (OpenStreetMap).</small
                   >
                 </li>
               }

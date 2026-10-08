@@ -68,7 +68,7 @@
       </div>
       <a class="stat link" routerLink="/fuentes">
         <b><i class="bi bi-cpu" aria-hidden="true"></i></b>
-        <span>{{ catalog.mode === 'demo' ? 'Precios simulados' : 'Fuentes mixtas' }}</span>
+        <span>{{ catalog.mode() === 'demo' ? 'Precios simulados' : 'Fuentes mixtas' }}</span>
         <small class="muted">Ver qué es real y qué no</small>
       </a>
     </div>

@@ -6,9 +6,9 @@ import {
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
-import { API_URL, DEALS_MODE, resolveMode } from './core/mode';
+import { API_URL, MODE_PREFERENCE, resolvePreference } from './core/mode';
 
-const mode = resolveMode(
+const preference = resolvePreference(
   environment.apiUrl,
   typeof localStorage === 'undefined' ? undefined : localStorage,
   location.search,
@@ -24,6 +24,6 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
     ),
     { provide: API_URL, useValue: environment.apiUrl },
-    { provide: DEALS_MODE, useValue: mode },
+    { provide: MODE_PREFERENCE, useValue: preference },
   ],
 };

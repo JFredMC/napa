@@ -1,9 +1,13 @@
 import { norm, type CategoryId } from '@napa/deals-engine';
 
 const RULES: [RegExp, CategoryId][] = [
-  [/lacteo|leche|huevo|queso|yogur|kumis|mantequilla/, 'lacteos'],
-  [/bebida|gaseosa|jugo|agua|cerveza|licor|vino|cafe listo|te /, 'bebidas'],
   [/mascota|perro|gato|concentrado/, 'mascotas'],
+  // Frescos y droguería antes que el resto: sus nombres chocan con otras reglas ("forte", "agua de rosas").
+  [/\b(carne|pollo|pescado|filete|fruta|verdura|fruver|panaderia)/, 'despensa'],
+  [/\b(salud|drogueria|medicamento|botiquin|vitamina)/, 'cuidado-personal'],
+  [/\b(papeleria|libro|escolar)/, 'hogar'],
+  [/lacteo|leche|huevo|queso|yogur|kumis|mantequilla/, 'lacteos'],
+  [/\b(bebida|gaseosa|jugo|agua\b|cerveza|licor|vino\b|cafe listo|te\b|aromatica)/, 'bebidas'],
   [/bebe|panal|toallita|infantil/, 'bebe'],
   [
     /aseo|limpieza|detergente|lavaloza|suavizante|papel higienico|desinfect|hogar y limpieza/,

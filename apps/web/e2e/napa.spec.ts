@@ -9,9 +9,13 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     if (!sessionStorage.getItem('e2e')) {
       localStorage.clear();
+      // Estas pruebas cubren la demo; el modo API tiene las suyas (api.spec.ts).
+      localStorage.setItem('napa:mode', 'demo');
       sessionStorage.setItem('e2e', '1');
     }
   });
+  // Nunca tocar el servidor real desde estas pruebas.
+  await page.route(/\/api\/(health|search|sources)/, (route) => route.abort());
   await page.route(/overpass/, (route) =>
     route.fulfill({ contentType: 'application/json', body: OVERPASS }),
   );

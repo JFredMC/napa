@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { STORES, simulatedConnectors, todayInBogota } from '@napa/connectors';
 import { scoreOffers, type CategoryId, type Offer, type ScoredOffer } from '@napa/deals-engine';
-import { API_URL, DEALS_MODE } from './mode';
+import { API_URL, MODE_PREFERENCE, waitForHealth, type DealsMode } from './mode';
 
 export type SourceMode = 'live' | 'blocked' | 'simulated';
 
@@ -11,7 +11,23 @@ export interface SourceStatus {
   mode: SourceMode;
   reason: string;
   count?: number;
+  access?: { url: string; status: number; botBlocked: boolean; checkedAt: string };
 }
+
+/**
+ * Conexión con el backend:
+ * - `off`: modo demo elegido o sin backend configurado.
+ * - `checking`: preguntando a /api/health (aún sin mostrar nada).
+ * - `waking`: tarda; Render está arrancando el servicio gratuito. Mientras tanto, demo.
+ * - `ready`: el backend respondió; modo API.
+ * - `down`: no respondió a tiempo; se quedó en demo.
+ */
+export type Connection = 'off' | 'checking' | 'waking' | 'ready' | 'down';
+
+/** Tras este tiempo sin respuesta se avisa que el servidor está despertando. */
+export const WAKING_AFTER_MS = 1500;
+/** Plazo total para que despierte antes de quedarse en demo. */
+export const WAKE_DEADLINE_MS = 75_000;
 
 interface ApiSearch {
   offers: Offer[];
@@ -29,8 +45,13 @@ const API_CACHE = 'napa:api-offers';
  */
 @Injectable({ providedIn: 'root' })
 export class CatalogStore {
-  readonly mode = inject(DEALS_MODE);
   private readonly apiUrl = inject(API_URL);
+  readonly preference = inject(MODE_PREFERENCE);
+  /** Qué datos se muestran ahora. */
+  readonly mode = signal<DealsMode>(this.preference === 'demo' || !this.apiUrl ? 'demo' : 'api');
+  readonly connection = signal<Connection>(this.mode() === 'api' ? 'checking' : 'off');
+  /** Segundos esperando a que despierte el servidor. */
+  readonly wakingSeconds = signal(0);
 
   readonly offers = signal<Offer[]>([]);
   readonly statuses = signal<SourceStatus[]>([]);
@@ -51,8 +72,40 @@ export class CatalogStore {
   private demoLoaded = false;
 
   constructor() {
-    if (this.mode === 'demo') void this.loadDemo();
-    else this.restoreApiCache();
+    if (this.mode() === 'demo') void this.loadDemo();
+    else void this.connect();
+  }
+
+  /** Despierta el backend; si no responde a tiempo, se queda en demo. */
+  async connect(): Promise<void> {
+    if (!this.apiUrl) return;
+    this.connection.set('checking');
+    this.loading.set(true);
+    const started = Date.now();
+    const tick = setInterval(() => {
+      const ms = Date.now() - started;
+      this.wakingSeconds.set(Math.floor(ms / 1000));
+      if (ms >= WAKING_AFTER_MS && this.connection() === 'checking') {
+        this.connection.set('waking');
+        // Mientras arranca, se ve la demo (marcada como simulada) en vez de una página vacía.
+        this.mode.set('demo');
+        void this.loadDemo();
+      }
+    }, 250);
+    const ok = await waitForHealth(this.apiUrl, { deadlineMs: WAKE_DEADLINE_MS, retryMs: 3000 });
+    clearInterval(tick);
+    if (ok) {
+      this.offers.set([]);
+      this.statuses.set([]);
+      this.restoreApiCache();
+      this.connection.set('ready');
+      this.mode.set('api');
+      this.loading.set(false);
+    } else {
+      this.connection.set('down');
+      this.mode.set('demo');
+      await this.loadDemo();
+    }
   }
 
   /** Ofertas del mismo producto (todas las tiendas), de la más barata a la más cara. */
@@ -62,7 +115,7 @@ export class CatalogStore {
 
   /** Modo API: busca en el backend (q vacío = búsqueda general) y acumula los resultados. */
   async search(q: string, category?: CategoryId): Promise<void> {
-    if (this.mode !== 'api' || !this.apiUrl) return;
+    if (this.mode() !== 'api' || this.connection() !== 'ready' || !this.apiUrl) return;
     const key = `${q}|${category ?? ''}`;
     if (this.lastQuery() === key) return;
     this.lastQuery.set(key);
@@ -93,7 +146,10 @@ export class CatalogStore {
   }
 
   private async loadDemo(): Promise<void> {
-    if (this.demoLoaded) return;
+    if (this.demoLoaded) {
+      this.loading.set(false);
+      return;
+    }
     this.demoLoaded = true;
     this.loading.set(true);
     const day = todayInBogota();
