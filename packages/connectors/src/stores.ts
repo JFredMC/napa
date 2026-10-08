@@ -110,7 +110,7 @@ export const STORES: Record<string, StoreMeta> = {
     vtexOrigin: 'https://www.carulla.com',
     respectDisallow: ['/api/'],
     sourceNote:
-      'Mismo grupo y plataforma que Éxito: robots.txt prohíbe /api/ y las búsquedas, la protección anti-bots responde 429 «bot» a un robot identificado y los términos son de uso personal. Queda simulada.',
+      'Mismo grupo y plataforma que Éxito: robots.txt prohíbe /api/ y las búsquedas, así que la única vía permitida sería descargar su sitemap completo y leer ficha por ficha, un rastreo masivo que Ñapa no hace. Su anti-bots además responde 429 «bot» de forma intermitente (desde el servidor en Render su sitemap sí respondió el 8 oct. 2026). Queda simulada hasta tener permiso o un convenio con Grupo Éxito.',
     accessProbeUrl: 'https://www.carulla.com/sitemap/sitemap.xml',
     osm: ['Carulla', 'Carulla Fresh Market', 'Carulla Express'],
     categories: [...GROCERY, 'hogar'],
