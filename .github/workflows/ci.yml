@@ -27,9 +27,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
-      # Los demás paquetes consumen el motor compilado.
+      # Los demás paquetes consumen el motor y los conectores compilados.
       - run: pnpm --filter @napa/deals-engine build
+      - run: pnpm --filter @napa/connectors build
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - name: API e2e (sin red, tiendas simuladas con fetch falso)
+        run: pnpm --filter @napa/api test:e2e

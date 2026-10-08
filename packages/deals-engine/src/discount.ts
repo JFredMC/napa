@@ -79,7 +79,7 @@ export function analyzeDiscount(offer: Offer): DiscountAnalysis {
   }
   if (notCheaper) {
     reasons.push(
-      realPct < 0
+      realPct <= -1
         ? `Hoy está ${Math.abs(realPct)}% más caro que su precio habitual (${cop(usual)}).`
         : `Prácticamente igual a su precio habitual (${cop(usual)}).`,
     );

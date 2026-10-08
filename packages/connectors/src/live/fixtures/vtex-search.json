@@ -1,0 +1,74 @@
+[
+  {
+    "productId": "900001",
+    "productName": "Arroz Blanco La Cosecha 1000 g",
+    "brand": "La Cosecha",
+    "linkText": "arroz-blanco-la-cosecha-1000g-900001",
+    "link": "https://tienda.example/arroz-blanco-la-cosecha-1000g-900001/p",
+    "categories": ["/Supermercado/Despensa/Arroces/", "/Supermercado/Despensa/", "/Supermercado/"],
+    "items": [
+      {
+        "itemId": "1",
+        "measurementUnit": "un",
+        "unitMultiplier": 1,
+        "images": [
+          { "imageUrl": "https://tienda.vteximg.com.br/arquivos/ids/123456/arroz.jpg?v=1" }
+        ],
+        "sellers": [
+          {
+            "sellerName": "Tienda Ejemplo",
+            "commertialOffer": {
+              "Price": 3990,
+              "ListPrice": 4590,
+              "PriceWithoutDiscount": 4590,
+              "AvailableQuantity": 50,
+              "IsAvailable": true
+            }
+          },
+          {
+            "sellerName": "Aliado",
+            "commertialOffer": {
+              "Price": 4100,
+              "ListPrice": 4100,
+              "AvailableQuantity": 3,
+              "IsAvailable": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "productId": "900002",
+    "productName": "Queso Campesino",
+    "brand": "Vaquita Feliz",
+    "linkText": "queso-campesino-900002",
+    "categories": ["/Supermercado/Lácteos, huevos y refrigerados/Quesos/"],
+    "items": [
+      {
+        "measurementUnit": "kg",
+        "unitMultiplier": 0.5,
+        "images": [{ "imageUrl": "http://inseguro.example/q.jpg" }],
+        "sellers": [
+          {
+            "sellerName": "Tienda Ejemplo",
+            "commertialOffer": {
+              "Price": 12900,
+              "ListPrice": 0,
+              "AvailableQuantity": 10,
+              "IsAvailable": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "productId": "900003",
+    "productName": "Producto agotado",
+    "brand": "X",
+    "categories": [],
+    "items": [{ "sellers": [{ "commertialOffer": { "Price": 0, "IsAvailable": false } }] }]
+  },
+  { "productName": "Sin id" }
+]
