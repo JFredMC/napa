@@ -62,13 +62,13 @@
 
 Ñapa tiene un adaptador por tienda detrás de una interfaz común (`StoreConnector`). Solo hay adaptadores reales donde existe acceso público u oficial, y corren en el **servidor** (nunca en el navegador).
 
-| Tienda                                   | Adaptador real                  | Hoy, con el servidor         | Por qué                                                                                                                                           |
-| ---------------------------------------- | ------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Jumbo                                    | Catálogo público VTEX           | **En vivo**                  | Su robots.txt no prohíbe la API de catálogo.                                                                                                      |
-| Olímpica                                 | Catálogo público VTEX           | **En vivo**                  | Su robots.txt prohíbe URLs con `&` o `%`: se consulta `?ft=palabra` y se filtra en el servidor.                                                   |
-| Mercado Libre                            | API oficial (OAuth)             | En vivo **con credenciales** | Sin token de una app registrada responde 403. Ver [cómo crear la app](#mercado-libre-credenciales).                                               |
-| Éxito, Carulla                           | Catálogo público VTEX (apagado) | Simulada                     | robots.txt prohíbe `/api/` y las búsquedas; su anti-bots responde `429 rate-limit-reason: bot` a un robot identificado; términos de uso personal. |
-| D1, Ara, Alkosto, Falabella, Shein, Temu | —                               | Simulada                     | Sin API pública de catálogo. **No se hace scraping.**                                                                                             |
+| Tienda                                   | Adaptador real                  | Hoy, con el servidor         | Por qué                                                                                                                                                                                                    |
+| ---------------------------------------- | ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jumbo                                    | Catálogo público VTEX           | **En vivo**                  | Su robots.txt no prohíbe la API de catálogo.                                                                                                                                                               |
+| Olímpica                                 | Catálogo público VTEX           | **En vivo**                  | Su robots.txt prohíbe URLs con `&` o `%`: se consulta `?ft=palabra` y se filtra en el servidor.                                                                                                            |
+| Mercado Libre                            | API oficial (OAuth)             | En vivo **con credenciales** | Sin token de una app registrada responde 403. Ver [cómo crear la app](#mercado-libre-credenciales).                                                                                                        |
+| Éxito, Carulla                           | Catálogo público VTEX (apagado) | Simulada                     | robots.txt prohíbe `/api/` y las búsquedas (solo quedaría rastrear el sitemap completo); su anti-bots responde `429 rate-limit-reason: bot` a un robot identificado; términos de uso personal (exito.com). |
+| D1, Ara, Alkosto, Falabella, Shein, Temu | —                               | Simulada                     | Sin API pública de catálogo. **No se hace scraping.**                                                                                                                                                      |
 
 Reglas del servidor: revisa `robots.txt` antes de cada dominio (y no consulta si no lo puede leer); solo consulta cuando alguien busca; como mucho una petición cada 2 s por tienda; caché de 1 hora; 60 peticiones por minuto por cliente; User-Agent que se identifica (`NapaBot/0.1 (+https://github.com/JFredMC/napa)`); no se disfraza de navegador, no resuelve captchas y no rota IPs. Si una fuente falla, esa tienda vuelve al simulado y la respuesta lo dice. Los precios reales solo se comparan con precios reales.
 
@@ -77,9 +77,10 @@ Reglas del servidor: revisa `robots.txt` antes de cada dominio (y no consulta si
 Revisado el 8 de octubre de 2026:
 
 1. **robots.txt** (`User-agent: *`) prohíbe `/api/` (donde vive el catálogo VTEX), las búsquedas (`/s?`), los filtros y las colecciones. Lo único permitido serían las fichas de producto y los sitemaps que anuncia.
-2. **Anti-bots**: esas páginas permitidas, incluido el sitemap que el propio robots.txt anuncia, responden `HTTP 429` con `rate-limit-reason: bot` a un robot que se identifica. Pasar de ahí exigiría hacerse pasar por un navegador, y Ñapa no lo hace. El servidor guarda la última comprobación (como mucho una cada 12 h, a pedido) y la muestra en la página Fuentes.
-3. **Términos y condiciones** de exito.com: el uso del sitio es “exclusivamente para su uso personal”.
-4. No hay feed público de productos: **Referidos Éxito** es de cashback y la **API de Marketplace** de Éxito (Seller Center) solo da acceso a los productos del propio vendedor.
+2. **Anti-bots**: esas páginas permitidas, incluido el sitemap que el propio robots.txt anuncia, responden `HTTP 429` con `rate-limit-reason: bot` a un robot que se identifica. Desde el servidor en Render (8 oct. 2026), Éxito siguió respondiendo 429 y el sitemap de Carulla sí respondió 200, así que en Carulla el bloqueo es intermitente. Pasar de ahí exigiría hacerse pasar por un navegador, y Ñapa no lo hace. El servidor guarda la última comprobación (como mucho una cada 12 h, a pedido) y la muestra en la página Fuentes.
+3. **Sin búsqueda permitida**: aun cuando el sitemap responde, buscar un producto exigiría descargar el sitemap completo y leer ficha por ficha: un rastreo masivo, no una consulta a pedido.
+4. **Términos y condiciones** de exito.com: el uso del sitio es “exclusivamente para su uso personal”.
+5. No hay feed público de productos: **Referidos Éxito** es de cashback y la **API de Marketplace** de Éxito (Seller Center) solo da acceso a los productos del propio vendedor.
 
 Para tenerlas en vivo haría falta **permiso escrito de Grupo Éxito** para el robot de Ñapa (o que lo pongan en su lista permitida), o un **convenio o feed de datos** con su área comercial o de e-commerce.
 
