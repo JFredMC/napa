@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - unrs-resolver
+  - core-js
