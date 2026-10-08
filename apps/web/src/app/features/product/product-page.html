@@ -210,25 +210,33 @@
               }
             </ul>
           </div>
-          @if (s.offer.url) {
-            <a
-              class="btn ghost small mt"
-              [href]="s.offer.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Ver en {{ stores[s.offer.storeId]?.name }}
-              <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
-            ></a>
-          } @else if (stores[s.offer.storeId]; as st) {
-            <a
-              class="btn ghost small mt"
-              [href]="st.website"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Sitio oficial de {{ st.name }}
-              <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
-            ></a>
-          }
+          <div class="out-row mt" data-testid="out-main">
+            <app-store-link
+              [offer]="s.offer"
+              variant="primary"
+              [label]="
+                s.offer.source === 'live'
+                  ? 'Ir a la tienda'
+                  : 'Buscar en ' + (stores[s.offer.storeId]?.name ?? 'la tienda')
+              "
+            />
+          </div>
+          <p class="muted small out-also" data-testid="out-also">
+            Búscalo también en
+            <app-store-link
+              storeId="exito"
+              [query]="searchTerm()"
+              label="Ver en Éxito"
+              [showNote]="false"
+            />
+            <app-store-link
+              storeId="carulla"
+              [query]="searchTerm()"
+              label="Ver en Carulla"
+              [showNote]="false"
+            />
+            <span class="muted">(se abre su buscador; Ñapa no consulta esas páginas)</span>
+          </p>
         </div>
 
         <div class="stack">
@@ -295,6 +303,7 @@
         </div>
       </div>
     }
+    <app-ad-slot slot="product" />
   } @else {
     <div class="empty">
       @if (catalog.loading()) {

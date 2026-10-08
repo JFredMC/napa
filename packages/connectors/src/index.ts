@@ -9,3 +9,4 @@ export * from './live/robots';
 export * from './live/categories';
 export * from './live/vtex';
 export * from './live/mercadolibre';
+export * from './links';

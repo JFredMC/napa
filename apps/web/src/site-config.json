@@ -1,0 +1,16 @@
+{
+  "siteUrl": "https://jfredmc.github.io/napa/",
+  "apiUrl": null,
+  "affiliates": {},
+  "adsense": null,
+  "analytics": {
+    "goatcounter": null,
+    "cloudflareToken": null
+  },
+  "contactEmail": null,
+  "legalOwner": null,
+  "channels": {
+    "telegram": null,
+    "whatsapp": null
+  }
+}

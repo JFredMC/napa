@@ -32,5 +32,29 @@ export const routes: Routes = [
     title: 'Fuentes · Ñapa',
     loadComponent: () => import('./features/sources/sources-page').then((m) => m.SourcesPage),
   },
+  {
+    path: 'privacidad',
+    title: 'Política de privacidad · Ñapa',
+    data: { doc: 'privacidad' },
+    loadComponent: () => import('./features/legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
+    path: 'terminos',
+    title: 'Términos de uso · Ñapa',
+    data: { doc: 'terminos' },
+    loadComponent: () => import('./features/legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
+    path: 'afiliados',
+    title: 'Afiliados y publicidad · Ñapa',
+    data: { doc: 'afiliados' },
+    loadComponent: () => import('./features/legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
+    path: 'cookies',
+    title: 'Cookies · Ñapa',
+    data: { doc: 'cookies' },
+    loadComponent: () => import('./features/legal/legal-page').then((m) => m.LegalPage),
+  },
   { path: '**', redirectTo: '' },
 ];

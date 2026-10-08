@@ -1843,3 +1843,109 @@ table.sources td:last-child {
   margin-top: 4px;
   color: var(--warn);
 }
+
+/* Salidas a tiendas, anuncios, consentimiento y páginas legales */
+.out-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.aff-note {
+  display: block;
+  flex-basis: 100%;
+  font-size: 12px;
+}
+.out-also {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+.offer-actions app-store-link {
+  display: contents;
+}
+.ad-slot {
+  margin: 18px 0;
+  min-height: 120px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 8px;
+}
+.ad-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.consent {
+  position: fixed;
+  z-index: 60;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--card, var(--bg));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 35%);
+  padding: 16px 18px;
+  font-size: 14px;
+}
+.consent h2 {
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+.consent-options {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+}
+.consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .consent {
+    bottom: 76px;
+  }
+}
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.legal-links button.link,
+.legal button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.legal-nav a.active {
+  font-weight: 700;
+  text-decoration: none;
+}
+.legal h2 {
+  font-size: 18px;
+  margin-top: 22px;
+}
+.legal .disclosure p + p {
+  margin-top: 8px;
+}

@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import type { FetchLike } from '@napa/connectors';
 import { APP_CONFIG, CLOCK, FETCH, loadConfig, type AppConfig } from './config';
+import { ClicksController, ClicksService } from './clicks';
 import { RobotsService } from './robots.service';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
@@ -20,7 +21,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: config.clientRpm }])],
-      controllers: [SearchController],
+      controllers: [SearchController, ClicksController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         {
@@ -31,6 +32,7 @@ export class AppModule {
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         RobotsService,
         SearchService,
+        ClicksService,
       ],
     };
   }

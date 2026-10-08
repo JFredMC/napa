@@ -1,0 +1,249 @@
+<section class="page narrow legal" data-testid="legal-page">
+  <nav class="legal-nav" aria-label="Documentos legales">
+    @for (l of links; track l.doc) {
+      <a [routerLink]="'/' + l.doc" [class.active]="doc() === l.doc">{{ l.label }}</a>
+    }
+  </nav>
+
+  @switch (doc()) {
+    @case ('privacidad') {
+      <h1>Política de tratamiento de datos personales</h1>
+      <p class="muted small">
+        Vigente desde el {{ updated }}. Ley 1581 de 2012 y Decreto 1074 de 2015.
+      </p>
+
+      <h2>1. Responsable</h2>
+      <p>
+        <strong>{{ owner() }}</strong
+        >. Contacto para todo lo relacionado con tus datos:
+        <strong data-testid="legal-contact">{{ email() }}</strong
+        >.
+      </p>
+
+      <h2>2. Qué datos tratamos y para qué</h2>
+      <ul>
+        <li>
+          <strong>Sin registro.</strong> Ñapa no pide nombre, correo ni teléfono para usarse. Tus
+          favoritos, alertas, lista de compras, tema y decisiones de privacidad se guardan
+          <strong>solo en tu navegador</strong> (almacenamiento local) y no nos llegan.
+        </li>
+        <li>
+          <strong>Ubicación</strong>: solo si tocas “Usar mi ubicación”. Se usa una vez, en tu
+          navegador, para consultar sedes cercanas en OpenStreetMap (Overpass); no se guarda ni se
+          envía a nuestro servidor.
+        </li>
+        <li>
+          <strong>Búsquedas</strong>: el texto que buscas va a nuestro servidor para consultar las
+          tiendas. No lo asociamos a ninguna persona y no guardamos registros de quién busca qué.
+        </li>
+        <li>
+          <strong>Clics a las tiendas</strong>: contamos cuántas veces se va a cada tienda por día
+          (tienda, tipo de enlace y si era de afiliado). Sin cookies, sin IP y sin identificadores.
+        </li>
+        <li>
+          <strong>Estadísticas</strong> (si las autorizas): páginas vistas agregadas, sin cookies,
+          con GoatCounter o Cloudflare Web Analytics.
+        </li>
+        <li>
+          <strong>Publicidad</strong> (si la autorizas): Google AdSense puede usar cookies e
+          identificadores para mostrar y medir anuncios, personalizados solo si lo aceptas. Google
+          actúa como responsable de esos datos:
+          <a
+            href="https://policies.google.com/technologies/ads?hl=es"
+            target="_blank"
+            rel="noopener"
+            >cómo usa Google los datos en anuncios</a
+          >.
+        </li>
+        <li>
+          <strong>Canales y alertas</strong>: si te unes a nuestro canal de Telegram o WhatsApp,
+          esas plataformas tratan tus datos según sus propias políticas.
+        </li>
+      </ul>
+
+      <h2>3. Tus derechos como titular</h2>
+      <p>
+        Conocer, actualizar y rectificar tus datos; pedir prueba de la autorización; ser informado
+        del uso que se les da; revocar la autorización o pedir que se supriman; acceder gratis a
+        ellos; y presentar quejas ante la Superintendencia de Industria y Comercio (SIC) una vez
+        agotado el trámite con nosotros.
+      </p>
+
+      <h2>4. Cómo ejercerlos</h2>
+      <p>
+        Escribe a <strong>{{ email() }}</strong> con tu nombre, lo que pides y un medio de
+        respuesta. Las <strong>consultas</strong> se responden en máximo 10 días hábiles y los
+        <strong>reclamos</strong> en máximo 15 días hábiles (prorrogables según la ley). Las
+        decisiones de privacidad de este navegador las cambias tú mismo
+        @if (consent.required) {
+          en
+          <button type="button" class="link" (click)="consent.open()" data-testid="open-consent">
+            preferencias de privacidad</button
+          >.
+        } @else {
+          (hoy no hay estadísticas ni anuncios activos, así que no hay nada que autorizar).
+        }
+      </p>
+
+      <h2>5. Autorización y transferencias</h2>
+      <p>
+        Las estadísticas y los anuncios solo se activan con tu autorización previa, expresa e
+        informada, que guardamos en tu navegador con su fecha. El sitio se publica en GitHub Pages y
+        el servidor corre en Render, ambos con infraestructura en Estados Unidos; las fuentes de
+        texto se cargan desde Google Fonts.
+      </p>
+
+      <h2>6. Menores de edad</h2>
+      <p>Ñapa no está dirigido a menores de edad ni recoge datos de ellos a sabiendas.</p>
+
+      <h2>7. Cambios</h2>
+      <p>
+        Si esta política cambia de forma importante, lo avisaremos en el sitio y, si hace falta,
+        volveremos a pedir tu autorización.
+      </p>
+    }
+
+    @case ('terminos') {
+      <h1>Términos de uso</h1>
+      <p class="muted small">Vigentes desde el {{ updated }}.</p>
+      <h2>Qué es Ñapa</h2>
+      <p>
+        Un comparador y recomendador de ofertas para Colombia. <strong>No vende nada</strong>, no
+        procesa pagos y no tiene relación con las tiendas, salvo los programas de afiliados que se
+        indican en <a routerLink="/afiliados">Afiliados y publicidad</a>.
+      </p>
+      <h2>Precios</h2>
+      <ul>
+        <li>
+          Los precios marcados <strong>“En vivo”</strong> vienen de fuentes públicas o oficiales de
+          cada tienda en el momento de la consulta y pueden cambiar en cualquier momento. El precio
+          que vale es el que muestra la tienda al comprar.
+        </li>
+        <li>
+          Los precios marcados <strong>“Simulado”</strong> son ilustrativos: productos y marcas
+          ficticias. No son precios reales vigentes.
+        </li>
+        <li>
+          El puntaje, el veredicto de descuento y la lista optimizada son estimaciones automáticas,
+          no asesoría.
+        </li>
+      </ul>
+      <h2>Compras</h2>
+      <p>
+        Toda compra se hace en el sitio de la tienda, bajo sus condiciones, garantías y políticas de
+        cambios. Ñapa no responde por productos, envíos ni pagos.
+      </p>
+      <h2>Uso permitido</h2>
+      <p>
+        Puedes usar Ñapa para comparar y planear tus compras. No está permitido usarlo para
+        sobrecargar el servicio o las tiendas, ni copiar masivamente sus datos.
+      </p>
+      <h2>Marcas</h2>
+      <p>
+        Los nombres y logos de las tiendas son de sus dueños y se usan solo para identificarlas.
+      </p>
+      <h2>Ley aplicable</h2>
+      <p>
+        Estos términos se rigen por las leyes de Colombia, incluido el Estatuto del Consumidor (Ley
+        1480 de 2011). Contacto: <strong>{{ email() }}</strong
+        >.
+      </p>
+    }
+
+    @case ('afiliados') {
+      <h1>Afiliados y publicidad</h1>
+      <p class="muted small">Vigente desde el {{ updated }}.</p>
+      <div class="card disclosure" data-testid="affiliate-disclosure">
+        <p>
+          <strong>Algunos enlaces a tiendas son de afiliado:</strong> si compras después de hacer
+          clic, Ñapa puede recibir una comisión de la tienda,
+          <strong>sin costo extra para ti</strong>. Esos enlaces llevan la marca
+          <code>rel="sponsored"</code> y una nota junto al botón.
+        </p>
+        <p>
+          <strong>Las comisiones no cambian el orden, el puntaje ni los veredictos.</strong> El
+          ranking sale solo del precio, el historial, el envío y la confianza de la tienda; una
+          tienda sin programa de afiliados puede salir primera.
+        </p>
+      </div>
+      <h2>Programas</h2>
+      <p>
+        @if (activeAffiliates) {
+          Hoy hay enlaces de afiliado activos con: <strong>{{ activeAffiliates }}</strong
+          >.
+        } @else {
+          Hoy <strong>ningún enlace es de afiliado</strong>: todos van directo a la tienda.
+        }
+        Programas con los que Ñapa puede trabajar:
+      </p>
+      <ul>
+        @for (p of programs; track p.storeId) {
+          <li>
+            <strong>{{ p.store }}</strong
+            >: {{ p.program }}{{ p.active ? ' (activo)' : '' }}.
+          </li>
+        }
+      </ul>
+      <h2>Publicidad</h2>
+      <p>
+        Ñapa puede mostrar anuncios de Google AdSense en espacios marcados como “Publicidad”,
+        separados de las ofertas. Los anuncios solo se cargan si los autorizas, y son personalizados
+        solo si lo aceptas aparte. Nunca se muestran como si fueran ofertas.
+      </p>
+      <h2>Canales de ofertas</h2>
+      <p>
+        Las publicaciones de nuestros canales (Telegram, WhatsApp) pueden incluir enlaces de
+        afiliado y lo dicen en cada publicación.
+      </p>
+    }
+
+    @case ('cookies') {
+      <h1>Cookies y almacenamiento</h1>
+      <p class="muted small">Vigente desde el {{ updated }}.</p>
+      <div class="table-wrap">
+        <table class="sources">
+          <thead>
+            <tr>
+              <th scope="col">Qué</th>
+              <th scope="col">Quién</th>
+              <th scope="col">Para qué</th>
+              <th scope="col">Cuándo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Almacenamiento local (<code>napa:*</code>)</td>
+              <td>Ñapa, en tu navegador</td>
+              <td>Favoritos, alertas, lista, tema, modo Demo/API y tu decisión de privacidad</td>
+              <td>Siempre (necesario); nunca sale de tu navegador</td>
+            </tr>
+            <tr>
+              <td>Estadísticas sin cookies</td>
+              <td>GoatCounter o Cloudflare Web Analytics</td>
+              <td>Contar páginas vistas de forma agregada</td>
+              <td>Solo si lo autorizas</td>
+            </tr>
+            <tr>
+              <td>Cookies de publicidad</td>
+              <td>Google AdSense</td>
+              <td>Mostrar, limitar y medir anuncios; personalizarlos si lo aceptas</td>
+              <td>Solo si autorizas anuncios</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Ñapa no usa cookies propias.
+        @if (consent.required) {
+          Puedes cambiar tu decisión en cualquier momento:
+          <button type="button" class="link" (click)="consent.open()">
+            abrir preferencias de privacidad</button
+          >.
+        } @else {
+          Hoy no hay estadísticas ni anuncios activos.
+        }
+        También puedes borrar el almacenamiento local desde la configuración de tu navegador.
+      </p>
+    }
+  }
+</section>

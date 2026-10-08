@@ -14,12 +14,24 @@ import { CatalogStore } from '../../core/catalog.store';
 import { cop, pct, shortDate, unitLabel } from '../../core/format';
 import { ListsStore } from '../../core/lists.store';
 import { PriceChart } from '../../shared/price-chart';
+import { StoreLink } from '../../shared/store-link';
+import { AdSlot } from '../../shared/ad-slot';
 import { Toast } from '../../shared/toast';
 import { ScoreRing, SourceTag, StoreChip, Thumb, Verdict } from '../../shared/ui';
 
 @Component({
   selector: 'app-product-page',
-  imports: [RouterLink, PriceChart, StoreChip, SourceTag, ScoreRing, Verdict, Thumb],
+  imports: [
+    RouterLink,
+    PriceChart,
+    StoreChip,
+    SourceTag,
+    ScoreRing,
+    Verdict,
+    Thumb,
+    StoreLink,
+    AdSlot,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-page.html',
 })
@@ -42,6 +54,16 @@ export class ProductPage {
 
   protected readonly rows = computed(() => compareAcrossStores(this.catalog.scored(), this.key()));
   protected readonly cheapest = computed<ScoredOffer | null>(() => this.rows().at(0)?.item ?? null);
+  /** Término para buscar el producto en otras tiendas: el título real sin tamaños sueltos. */
+  protected readonly searchTerm = computed(() => {
+    const title = this.cheapest()?.offer.title ?? '';
+    return (
+      title
+        .replace(/\b(x\s*)?\d+([.,]\d+)?\s*(kg|g|gr|ml|l|lt|und|un)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim() || title
+    );
+  });
   protected readonly selected = computed<ScoredOffer | null>(() => {
     const id = this.tienda();
     return this.rows().find((r) => r.item.offer.storeId === id)?.item ?? this.cheapest();

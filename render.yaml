@@ -48,6 +48,11 @@ services:
         value: '2000'
       - key: CLIENT_RPM
         value: '60'
+      - key: SITE_URL
+        value: https://jfredmc.github.io/napa/
+      # Protege /api/clicks y /api/channel/* (mín. 24 caracteres). Render lo genera.
+      - key: ADMIN_TOKEN
+        generateValue: true
       - key: ML_CLIENT_ID
         sync: false
       - key: ML_CLIENT_SECRET

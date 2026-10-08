@@ -20,7 +20,9 @@ import {
 import { CatalogStore } from '../../core/catalog.store';
 import { CATEGORY_ICON, cop, pct } from '../../core/format';
 import { LocationStore } from '../../core/location.store';
+import { AdSlot } from '../../shared/ad-slot';
 import { OfferCard } from '../../shared/offer-card';
+import { StoreLink } from '../../shared/store-link';
 
 const SORTS: { id: SortKey; label: string }[] = [
   { id: 'score', label: 'Mejor puntaje' },
@@ -34,7 +36,7 @@ const PAGE = 24;
 
 @Component({
   selector: 'app-deals-page',
-  imports: [OfferCard, RouterLink],
+  imports: [OfferCard, RouterLink, AdSlot, StoreLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './deals-page.html',
 })

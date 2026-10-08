@@ -152,3 +152,53 @@ test('marca, tema y enlaces profundos', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme', theme ?? '');
   await expect(page).toHaveTitle(/Ñapa/);
 });
+
+test('salidas a tiendas: pestaña nueva, rel sponsored y búsqueda en Éxito y Carulla', async ({
+  page,
+}) => {
+  await page.goto('?q=arroz');
+  const elsewhere = page.getByTestId('search-elsewhere');
+  await expect(elsewhere.getByTestId('out-exito')).toHaveAttribute(
+    'href',
+    'https://www.exito.com/s?q=arroz',
+  );
+  await expect(elsewhere.getByTestId('out-carulla')).toHaveAttribute(
+    'href',
+    'https://www.carulla.com/s?q=arroz',
+  );
+  await page.getByTestId('results').getByTestId('compare').first().click();
+  const main = page.getByTestId('out-main').locator('a');
+  await expect(main).toHaveAttribute('target', '_blank');
+  await expect(main).toHaveAttribute('rel', 'sponsored nofollow noopener');
+  // En la demo los productos son ficticios: el botón abre la búsqueda de la tienda, no una ficha.
+  await expect(main).toContainText('Buscar en');
+  await expect(page.getByTestId('out-also').getByTestId('out-exito')).toHaveAttribute(
+    'rel',
+    'sponsored nofollow noopener',
+  );
+  // Sin IDs configurados, ningún enlace es de afiliado.
+  await expect(page.locator('[data-affiliate="1"]')).toHaveCount(0);
+});
+
+test('páginas legales y aviso de afiliados', async ({ page }) => {
+  await page.goto('');
+  await expect(page.getByTestId('disclaimer')).toContainText('de afiliado');
+  await page.getByTestId('legal-links').getByRole('link', { name: 'Privacidad' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('tratamiento de datos');
+  await expect(page.getByTestId('legal-page')).toContainText('Ley 1581');
+  await expect(page.getByTestId('legal-contact')).toBeVisible();
+  await page.goto('afiliados');
+  await expect(page.getByTestId('affiliate-disclosure')).toContainText('sin costo extra');
+  await expect(page.getByTestId('affiliate-disclosure')).toContainText(
+    'no cambian el orden, el puntaje ni los veredictos',
+  );
+  await page.goto('terminos');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Términos de uso');
+  await page.goto('cookies');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Cookies');
+  // Sin analítica ni anuncios configurados no hay banner ni scripts de terceros.
+  await expect(page.getByTestId('consent-banner')).toHaveCount(0);
+  await expect(
+    page.locator('script[src*="googlesyndication"], script[src*="goatcounter"]'),
+  ).toHaveCount(0);
+});

@@ -9,7 +9,7 @@ export async function createApp(deps: AppDeps = {}): Promise<INestApplication> {
     logger: ['log', 'warn', 'error'],
   });
   app.setGlobalPrefix('api');
-  app.enableCors({ origin: config.corsOrigins, methods: ['GET'] });
+  app.enableCors({ origin: config.corsOrigins, methods: ['GET', 'POST'] });
   app.enableShutdownHooks();
   return app;
 }
