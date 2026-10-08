@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:pages": "ng build --base-href /napa/ && node scripts/postbuild-pages.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
     "serve:pages": "node scripts/serve-pages.mjs",
     "test": "ng test --watch=false",
     "lint": "ng lint",

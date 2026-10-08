@@ -4,15 +4,17 @@ import { createApp } from '../src/bootstrap';
 import { loadConfig } from '../src/config';
 import { fakeFetch } from './fake-fetch';
 
+const ADMIN = 'test-admin-token-0123456789abcdef';
+
 describe('API (e2e)', () => {
   let app: INestApplication;
   const fetchFn = fakeFetch();
 
   beforeAll(async () => {
     const config = {
-      ...loadConfig({ CORS_ORIGINS: 'http://localhost:4200' }),
+      ...loadConfig({ CORS_ORIGINS: 'http://localhost:4200', ADMIN_TOKEN: ADMIN }),
       upstreamIntervalMs: 0,
-      clientRpm: 8,
+      clientRpm: 12,
     };
     app = await createApp({
       config,
@@ -64,9 +66,27 @@ describe('API (e2e)', () => {
     ]);
   });
 
+  it('POST /api/click cuenta salidas sin datos personales; /api/clicks exige ADMIN_TOKEN', async () => {
+    await request(app.getHttpServer())
+      .post('/api/click?store=jumbo&kind=producto&aff=1')
+      .expect(204);
+    await request(app.getHttpServer()).post('/api/click?store=nada&kind=producto').expect(400);
+    await request(app.getHttpServer()).get('/api/clicks').expect(401);
+    const res = await request(app.getHttpServer())
+      .get('/api/clicks')
+      .set('Authorization', `Bearer ${ADMIN}`)
+      .expect(200);
+    expect(res.body.days['2026-10-07'].jumbo).toEqual({
+      producto: 1,
+      busqueda: 0,
+      canal: 0,
+      afiliado: 1,
+    });
+  });
+
   it('limita peticiones por cliente (429)', async () => {
     let last = 200;
-    for (let i = 0; i < 10; i += 1)
+    for (let i = 0; i < 14; i += 1)
       last = (await request(app.getHttpServer()).get('/api/health')).status;
     expect(last).toBe(429);
   });

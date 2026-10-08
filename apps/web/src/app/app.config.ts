@@ -7,9 +7,12 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from 
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { API_URL, MODE_PREFERENCE, resolvePreference } from './core/mode';
+import { DEFAULT_SITE_CONFIG } from './core/site-config';
+
+const apiUrl = DEFAULT_SITE_CONFIG.apiUrl ?? environment.apiUrl;
 
 const preference = resolvePreference(
-  environment.apiUrl,
+  apiUrl,
   typeof localStorage === 'undefined' ? undefined : localStorage,
   location.search,
 );
@@ -23,7 +26,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
     ),
-    { provide: API_URL, useValue: environment.apiUrl },
+    { provide: API_URL, useValue: apiUrl },
     { provide: MODE_PREFERENCE, useValue: preference },
   ],
 };

@@ -1,6 +1,8 @@
 name: Deploy demo to GitHub Pages
 
-# Publica la demo de Ñapa (todo simulado en el navegador; el backend no se publica) en https://jfredmc.github.io/napa/.
+# Publica la web de Ñapa en GitHub Pages (https://jfredmc.github.io/napa/ o el dominio de NAPA_SITE_URL).
+# Afiliados, anuncios, analítica y canales salen de variables del repositorio (Settings → Variables → Actions);
+# sin ellas, todo queda apagado.
 on:
   push:
     branches: [main]
@@ -28,8 +30,29 @@ jobs:
       - run: pnpm --filter @napa/deals-engine build
       - run: pnpm --filter @napa/connectors build
       - uses: actions/configure-pages@v5
-      - name: Build (base href /napa/)
+      - name: Build (base href según NAPA_SITE_URL)
         run: pnpm --filter @napa/web build:pages
+        env:
+          NAPA_SITE_URL: ${{ vars.NAPA_SITE_URL }}
+          NAPA_API_URL: ${{ vars.NAPA_API_URL }}
+          NAPA_AFF_MERCADOLIBRE: ${{ vars.NAPA_AFF_MERCADOLIBRE }}
+          NAPA_AFF_FALABELLA: ${{ vars.NAPA_AFF_FALABELLA }}
+          NAPA_AFF_SHEIN: ${{ vars.NAPA_AFF_SHEIN }}
+          NAPA_AFF_TEMU: ${{ vars.NAPA_AFF_TEMU }}
+          NAPA_AFF_ALKOSTO: ${{ vars.NAPA_AFF_ALKOSTO }}
+          NAPA_AFF_EXITO: ${{ vars.NAPA_AFF_EXITO }}
+          NAPA_AFF_CARULLA: ${{ vars.NAPA_AFF_CARULLA }}
+          NAPA_AFF_JUMBO: ${{ vars.NAPA_AFF_JUMBO }}
+          NAPA_AFF_OLIMPICA: ${{ vars.NAPA_AFF_OLIMPICA }}
+          NAPA_ADSENSE_CLIENT: ${{ vars.NAPA_ADSENSE_CLIENT }}
+          NAPA_ADSENSE_SLOT_FEED: ${{ vars.NAPA_ADSENSE_SLOT_FEED }}
+          NAPA_ADSENSE_SLOT_PRODUCT: ${{ vars.NAPA_ADSENSE_SLOT_PRODUCT }}
+          NAPA_GOATCOUNTER: ${{ vars.NAPA_GOATCOUNTER }}
+          NAPA_CF_BEACON_TOKEN: ${{ vars.NAPA_CF_BEACON_TOKEN }}
+          NAPA_CONTACT_EMAIL: ${{ vars.NAPA_CONTACT_EMAIL }}
+          NAPA_LEGAL_OWNER: ${{ vars.NAPA_LEGAL_OWNER }}
+          NAPA_TELEGRAM_URL: ${{ vars.NAPA_TELEGRAM_URL }}
+          NAPA_WHATSAPP_URL: ${{ vars.NAPA_WHATSAPP_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/dist/web/browser

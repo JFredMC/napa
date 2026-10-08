@@ -1,12 +1,14 @@
 // Serves dist/pages like GitHub Pages does: under /napa/, static files
 // only, and 404.html (with status 404) for anything else.
 // Used by the demo Playwright suite: `pnpm serve:pages` after `pnpm build:pages`.
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 
 const root = new URL('../dist/web/browser/', import.meta.url).pathname;
-const base = '/napa/';
+const base = new URL(
+  JSON.parse(readFileSync(new URL('../src/site-config.json', import.meta.url), 'utf8')).siteUrl,
+).pathname;
 const port = Number(process.env.PORT ?? 4310);
 const types = {
   '.html': 'text/html; charset=utf-8',

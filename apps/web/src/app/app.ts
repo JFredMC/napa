@@ -5,11 +5,15 @@ import { CatalogStore } from './core/catalog.store';
 import { ListsStore } from './core/lists.store';
 import { API_URL, switchMode } from './core/mode';
 import { ThemeStore } from './core/theme.store';
+import { ConsentStore } from './core/consent.store';
+import { SITE_CONFIG } from './core/site-config';
+import { Trackers } from './core/trackers';
+import { ConsentBanner } from './shared/consent-banner';
 import { Toast } from './shared/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ConsentBanner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
@@ -21,6 +25,12 @@ export class App {
   protected readonly apiUrl = inject(API_URL);
   protected readonly year = new Date().getFullYear();
   protected readonly switchMode = switchMode;
+  protected readonly consent = inject(ConsentStore);
+  protected readonly site = inject(SITE_CONFIG);
+
+  constructor() {
+    inject(Trackers).start();
+  }
 
   /** Tras una caída, vuelve a intentar el modo API (recarga para empezar limpio). */
   protected retry(): void {

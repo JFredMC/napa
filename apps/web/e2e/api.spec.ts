@@ -42,6 +42,10 @@ test('servidor despierto: modo API por defecto, precios reales marcadas en vivo'
   const live = page.getByTestId('tag-live');
   await expect(live.first()).toBeVisible();
   await expect(page.getByTestId('tag-sim')).toHaveCount(0);
+  // Oferta real: el botón de salida lleva a la ficha de la tienda.
+  const out = page.getByTestId('top').locator('[data-testid^="out-"]').first();
+  await expect(out).toHaveAttribute('href', /^https:\/\/www\.(jumbocolombia|olimpica)\.com\//);
+  await expect(out).toHaveAttribute('rel', 'sponsored nofollow noopener');
 
   await page.goto('fuentes');
   await expect(page.getByTestId('mode-card')).toContainText('Modo API');

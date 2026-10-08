@@ -153,10 +153,36 @@
   <div class="inner">
     <p class="disclaimer" data-testid="disclaimer">
       <i class="bi bi-shield-check" aria-hidden="true"></i>
-      Ñapa compara y recomienda; no vende nada ni tiene relación con las tiendas. Los nombres de las
-      tiendas son de sus dueños. Las tiendas sin API pública se muestran con datos simulados y así
-      se marcan: no se hace scraping.
+      Ñapa compara y recomienda; no vende nada. Algunos enlaces a tiendas son
+      <a routerLink="/afiliados">de afiliado</a>: si compras, Ñapa puede recibir una comisión sin
+      costo extra para ti, y eso no cambia el orden ni el puntaje. Las tiendas sin API pública se
+      muestran con datos simulados y así se marcan: no se hace scraping.
     </p>
+    @if (site.channels.telegram || site.channels.whatsapp) {
+      <p class="small channels" data-testid="channels">
+        Ofertas del día en
+        @if (site.channels.telegram) {
+          <a [href]="site.channels.telegram" target="_blank" rel="noopener">Telegram</a>
+        }
+        @if (site.channels.telegram && site.channels.whatsapp) {
+          ·
+        }
+        @if (site.channels.whatsapp) {
+          <a [href]="site.channels.whatsapp" target="_blank" rel="noopener">WhatsApp</a>
+        }
+      </p>
+    }
+    <nav class="legal-links small" aria-label="Legal" data-testid="legal-links">
+      <a routerLink="/privacidad">Privacidad</a>
+      <a routerLink="/terminos">Términos</a>
+      <a routerLink="/afiliados">Afiliados y publicidad</a>
+      <a routerLink="/cookies">Cookies</a>
+      @if (consent.required) {
+        <button type="button" class="link" (click)="consent.open()" data-testid="privacy-prefs">
+          Preferencias de privacidad
+        </button>
+      }
+    </nav>
     <p class="muted small">
       © {{ year }} Ñapa · Tus favoritos, alertas y lista quedan solo en este navegador. Mapa: ©
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer"
@@ -167,6 +193,8 @@
     </p>
   </div>
 </footer>
+
+<app-consent-banner />
 
 <nav class="tabbar" aria-label="Secciones (móvil)">
   @for (item of nav; track item.path) {

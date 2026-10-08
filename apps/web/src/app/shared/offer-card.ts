@@ -11,11 +11,12 @@ import {
 import { cop, pct, unitLabel } from '../core/format';
 import { ListsStore } from '../core/lists.store';
 import { Toast } from './toast';
+import { StoreLink } from './store-link';
 import { ScoreRing, SourceTag, StoreChip, Thumb, Verdict } from './ui';
 
 @Component({
   selector: 'app-offer-card',
-  imports: [RouterLink, StoreChip, SourceTag, ScoreRing, Verdict, Thumb],
+  imports: [RouterLink, StoreChip, SourceTag, ScoreRing, Verdict, Thumb, StoreLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './offer-card.html',
 })

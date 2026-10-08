@@ -136,6 +136,33 @@ Endpoints: `GET /api/search?q=arroz&category=despensa&stores=jumbo,olimpica&limi
    y guardar el `refresh_token` de la respuesta (`ML_REFRESH_TOKEN`).
 6. Poner los tres valores como variables secretas del servicio `napa-api` en Render. El refresh token es de un solo uso y el servidor lo renueva en memoria; si el servicio se reinicia mucho tiempo después, puede hacer falta repetir los pasos 4 y 5.
 
+## Monetización (todo por configuración)
+
+Nada de esto trae IDs en el código: sin variables, todo queda apagado y los enlaces van directo a la tienda.
+
+- **Enlaces de afiliado** por tienda (`packages/connectors/src/links.ts`). Cada regla es una plantilla de deeplink con `{url}` (Admitad, Awin o el generador de la tienda) o parámetros `clave=valor` que se agregan a la URL. Las ofertas en vivo enlazan a la ficha real; las simuladas, a la búsqueda pública de la tienda (nunca a una ficha inventada).
+- **Botones de salida** “Ir a la tienda”, “Ver en Éxito” y “Ver en Carulla” (abren su buscador; Ñapa no consulta esas páginas): pestaña nueva, `rel="sponsored nofollow noopener"` y nota cuando el enlace es de afiliado. Aviso de afiliados al pie y en [`/afiliados`](https://jfredmc.github.io/napa/afiliados).
+- **Conteo de clics sin datos personales**: `POST /api/click?store=&kind=&aff=` (beacon) suma contadores por día; `GET /api/clicks` con `Authorization: Bearer ADMIN_TOKEN`. Sin IP, User-Agent ni cookies; en memoria.
+- **Anuncios**: espacios reservados de AdSense (portada y producto) que no existen hasta tener ID de editor, ID de bloque y consentimiento. `ads.txt` se genera con el build.
+- **Consentimiento** (Ley 1581 y Google): nada de terceros carga antes de decidir; “Solo necesarias”, “Configurar” (estadísticas, anuncios, anuncios personalizados) o “Aceptar todo”; si no se aceptan los personalizados, AdSense pide no personalizados. Retirar un permiso recarga la página.
+- **Analítica sin cookies**: GoatCounter o Cloudflare Web Analytics, solo con consentimiento.
+- **Páginas legales**: [privacidad](https://jfredmc.github.io/napa/privacidad) (Ley 1581/2012), [términos](https://jfredmc.github.io/napa/terminos), [afiliados y publicidad](https://jfredmc.github.io/napa/afiliados) y [cookies](https://jfredmc.github.io/napa/cookies).
+
+Variables del repositorio (Settings → Secrets and variables → Actions → Variables), leídas por `pages.yml`:
+
+| Variable                                              | Ejemplo                                    | Para qué                                        |
+| ----------------------------------------------------- | ------------------------------------------ | ----------------------------------------------- |
+| `NAPA_SITE_URL`                                       | `https://napa.co/`                         | Dominio propio: base href, CNAME, sitemap, OG   |
+| `NAPA_API_URL`                                        | `https://napa-api.onrender.com`            | Backend (si cambia)                             |
+| `NAPA_AFF_<TIENDA>`                                   | `https://ad.admitad.com/g/XXXX/?ulp={url}` | Regla de afiliado por tienda (`SHEIN`, `TEMU`…) |
+| `NAPA_ADSENSE_CLIENT`                                 | `ca-pub-0000000000000000`                  | ID de editor de AdSense                         |
+| `NAPA_ADSENSE_SLOT_FEED`, `NAPA_ADSENSE_SLOT_PRODUCT` | `1234567890`                               | IDs de los bloques de anuncios                  |
+| `NAPA_GOATCOUNTER` o `NAPA_CF_BEACON_TOKEN`           | `napa`                                     | Analítica sin cookies                           |
+| `NAPA_CONTACT_EMAIL`, `NAPA_LEGAL_OWNER`              | `datos@napa.co`                            | Responsable y contacto en la política de datos  |
+| `NAPA_TELEGRAM_URL`, `NAPA_WHATSAPP_URL`              | `https://t.me/napaofertas`                 | Enlaces a los canales en el pie                 |
+
+En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_<TIENDA>` para los enlaces del canal.
+
 ## Arquitectura
 
 ```

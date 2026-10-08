@@ -85,6 +85,8 @@
       }
     </div>
 
+    <app-ad-slot slot="feed" />
+
     @for (c of categories; track c) {
       @if (byCategory().get(c); as list) {
         <div class="section-head">
@@ -194,6 +196,13 @@
         }}{{ q() ? ' para “' + q() + '”' : '' }}
       }
     </p>
+    @if (q()) {
+      <p class="muted small out-also" data-testid="search-elsewhere">
+        Buscar “{{ q() }}” también en
+        <app-store-link storeId="exito" [query]="q()" label="Ver en Éxito" [showNote]="false" />
+        <app-store-link storeId="carulla" [query]="q()" label="Ver en Carulla" [showNote]="false" />
+      </p>
+    }
     <div class="grid offers" data-testid="results">
       @for (item of visible(); track item.offer.id) {
         <app-offer-card [item]="item" />
