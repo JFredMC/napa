@@ -563,6 +563,7 @@ select:focus {
   height: 9px;
   border-radius: 50%;
   background: var(--store, var(--accent));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 22%, transparent);
 }
 .chips.stores .chip.on {
   border-color: var(--store);
@@ -659,7 +660,7 @@ select:focus {
   height: 10px;
   border-radius: 3px;
   background: var(--store);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--store) 30%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 22%, transparent);
 }
 .source-tag {
   display: inline-flex;

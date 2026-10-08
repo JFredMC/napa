@@ -17,8 +17,11 @@ const SAMPLE = [
   'huevos-30',
   'cafe-500',
   'atun-3x160',
+  'queso-500',
   'papel-12',
   'detergente-3l',
+  'panales-50',
+  'cerveza-6x330',
 ];
 
 @Component({

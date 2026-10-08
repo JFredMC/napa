@@ -1,0 +1,32 @@
+name: E2E against the live demo
+
+# Corre la suite de Playwright contra https://jfredmc.github.io/napa/ después de cada
+# despliegue a Pages (y a mano).
+on:
+  workflow_run:
+    workflows: ['Deploy demo to GitHub Pages']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @napa/web
+      - run: pnpm --filter @napa/web exec playwright install --with-deps chromium
+      - name: Esperar a que Pages sirva la versión nueva
+        run: sleep 30
+      - run: pnpm --filter @napa/web e2e
+        env:
+          E2E_BASE_URL: https://jfredmc.github.io/napa/
