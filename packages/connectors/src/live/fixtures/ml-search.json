@@ -1,0 +1,29 @@
+{
+  "site_id": "MCO",
+  "results": [
+    {
+      "id": "MCO000000001",
+      "title": "Freidora De Aire Digital 5 L Calora",
+      "price": 299900,
+      "original_price": 389900,
+      "currency_id": "COP",
+      "available_quantity": 12,
+      "permalink": "https://articulo.mercadolibre.com.co/MCO-000000001-freidora",
+      "thumbnail": "http://http2.mlstatic.com/D_000-I.jpg",
+      "domain_id": "MCO-AIR_FRYERS",
+      "seller": { "id": 1, "nickname": "VENDEDOR_EJEMPLO" },
+      "attributes": [{ "id": "BRAND", "value_name": "Calora" }]
+    },
+    {
+      "id": "MCO000000002",
+      "title": "Café Molido 500 g",
+      "price": 18500,
+      "original_price": null,
+      "currency_id": "COP",
+      "permalink": "https://phishing.example/x",
+      "thumbnail": "",
+      "attributes": []
+    },
+    { "id": "MCO000000003", "title": "En dólares", "price": 10, "currency_id": "USD" }
+  ]
+}
