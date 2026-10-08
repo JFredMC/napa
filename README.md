@@ -108,7 +108,9 @@ Los datos simulados son deterministas por día: mismas marcas ficticias, 120 dí
 
 ## Servidor en Render
 
-`apps/api` (NestJS 11) corre en el plan gratuito de Render con el Blueprint [`render.yaml`](render.yaml): servicio `napa-api`, rama `main`, instala desde la raíz del monorepo y construye solo la API.
+`apps/api` (NestJS 11) corre en el plan gratuito de Render con el Blueprint [`render.yaml`](render.yaml): servicio `napa-api`, rama `main`, instala desde la raíz del monorepo y construye solo la API. Se despliega solo cuando el CI de `main` pasa.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/JFredMC/napa)
 
 | Ajuste       | Valor                                                                                                                                                                                  |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
