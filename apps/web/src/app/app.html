@@ -37,7 +37,7 @@
         <div class="mode-switch" role="group" aria-label="Fuente de datos">
           <button
             type="button"
-            [class.on]="catalog.mode === 'demo'"
+            [class.on]="catalog.mode() === 'demo'"
             (click)="switchMode('demo')"
             data-testid="mode-demo"
           >
@@ -45,7 +45,7 @@
           </button>
           <button
             type="button"
-            [class.on]="catalog.mode === 'api'"
+            [class.on]="catalog.mode() === 'api'"
             (click)="switchMode('api')"
             data-testid="mode-api"
           >
@@ -84,28 +84,65 @@
   </div>
 </header>
 
-@if (catalog.mode === 'demo') {
-  <div class="demo-banner" role="note" data-testid="demo-banner">
-    <div class="inner">
-      <i class="bi bi-info-circle" aria-hidden="true"></i>
-      <span>
-        <strong>Modo demo:</strong> todos los precios son <strong>simulados</strong> con productos y
-        marcas ficticias. No son precios reales vigentes.
-      </span>
-      <a routerLink="/fuentes">¿Por qué?</a>
+@switch (catalog.connection()) {
+  @case ('waking') {
+    <div class="demo-banner waking" role="status" data-testid="waking-banner">
+      <div class="inner">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>
+          <strong>Despertando el servidor…</strong> El backend vive en un plan gratuito que se
+          duerme tras 15 min sin uso y tarda hasta un minuto en arrancar ({{
+            catalog.wakingSeconds()
+          }}
+          s). Mientras tanto ves la demo: precios <strong>simulados</strong>.
+        </span>
+        <button type="button" class="link" (click)="switchMode('demo')" data-testid="stay-demo">
+          Quedarme en demo
+        </button>
+      </div>
     </div>
-  </div>
-} @else {
-  <div class="demo-banner api" role="note" data-testid="api-banner">
-    <div class="inner">
-      <i class="bi bi-broadcast" aria-hidden="true"></i>
-      <span>
-        <strong>Modo API</strong> ({{ apiUrl }}): precios reales donde hay fuente permitida; el
-        resto sigue simulado y marcado en cada oferta.
-      </span>
-      <a routerLink="/fuentes">Ver fuentes</a>
+  }
+  @case ('checking') {
+    <div class="demo-banner api" role="status" data-testid="checking-banner">
+      <div class="inner">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Conectando con el servidor de precios…</span>
+      </div>
     </div>
-  </div>
+  }
+  @case ('ready') {
+    <div class="demo-banner api" role="note" data-testid="api-banner">
+      <div class="inner">
+        <i class="bi bi-broadcast" aria-hidden="true"></i>
+        <span>
+          <strong>Modo API:</strong> precios reales de Jumbo y Olímpica, consultados ahora por el
+          servidor de Ñapa; el resto sigue simulado y marcado en cada oferta.
+        </span>
+        <a routerLink="/fuentes">Ver fuentes</a>
+      </div>
+    </div>
+  }
+  @default {
+    <div class="demo-banner" role="note" data-testid="demo-banner">
+      <div class="inner">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        <span>
+          <strong>Modo demo:</strong> todos los precios son <strong>simulados</strong> con productos
+          y marcas ficticias. No son precios reales vigentes.
+          @if (catalog.connection() === 'down') {
+            <span data-testid="server-down">El servidor de precios no respondió a tiempo.</span>
+          }
+        </span>
+        @if (catalog.connection() === 'down') {
+          <button type="button" class="link" (click)="retry()" data-testid="retry-api">
+            Reintentar
+          </button>
+        } @else {
+          <a routerLink="/fuentes">¿Por qué?</a>
+        }
+      </div>
+    </div>
+  }
 }
 
 <main id="contenido">

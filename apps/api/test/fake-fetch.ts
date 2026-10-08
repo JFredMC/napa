@@ -28,6 +28,8 @@ export function fakeFetch(): FakeFetch {
     if (fn.fail.has(url.host)) return new Response('Too Many Requests', { status: 429 });
     if (url.pathname === '/robots.txt')
       return new Response(ROBOTS[url.host] ?? '', { status: ROBOTS[url.host] ? 200 : 404 });
+    if (url.pathname === '/sitemap/sitemap.xml')
+      return new Response('', { status: 429, headers: { 'rate-limit-reason': 'bot' } });
     if (url.pathname.startsWith('/api/catalog_system/pub/products/search'))
       return new Response(VTEX_FIXTURE, { status: 206 });
     return new Response('not found', { status: 404 });

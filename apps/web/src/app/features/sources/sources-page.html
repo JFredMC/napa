@@ -13,23 +13,44 @@
   </div>
 
   <div class="card mode-card" data-testid="mode-card">
-    @if (catalog.mode === 'demo') {
+    @if (catalog.mode() === 'demo') {
       <h2><i class="bi bi-cpu" aria-hidden="true"></i> Estás en modo demo</h2>
       <p>
-        Esta versión (GitHub Pages) no tiene backend:
-        <strong>todos los precios son simulados en tu navegador</strong>, con productos y marcas
-        ficticias, 120 días de historial generado y condiciones de envío y calificaciones
+        <strong>Todos los precios que ves son simulados en tu navegador</strong>, con productos y
+        marcas ficticias, 120 días de historial generado y condiciones de envío y calificaciones
         ilustrativas. Las tiendas sí son reales; sus precios aquí no.
       </p>
-      <p class="muted small">
-        El backend en NestJS (en el repositorio) consulta las fuentes reales permitidas. Se corre en
-        local y la app cambia a modo API con el selector Demo/API.
-      </p>
+      @if (apiUrl) {
+        <p class="muted small">
+          @switch (catalog.connection()) {
+            @case ('waking') {
+              El servidor de precios (<code>{{ apiUrl }}</code
+              >) está despertando; cuando responda, la app cambia sola a modo API.
+            }
+            @case ('down') {
+              El servidor de precios (<code>{{ apiUrl }}</code
+              >) no respondió a tiempo, así que te mostramos la demo.
+            }
+            @default {
+              Elegiste la demo. Con el selector Demo/API puedes usar el servidor de precios (<code
+                >{{ apiUrl }}</code
+              >).
+            }
+          }
+        </p>
+      } @else {
+        <p class="muted small">Esta compilación no tiene servidor de precios configurado.</p>
+      }
     } @else {
-      <h2><i class="bi bi-broadcast" aria-hidden="true"></i> Modo API: {{ apiUrl }}</h2>
+      <h2><i class="bi bi-broadcast" aria-hidden="true"></i> Modo API</h2>
       <p>
-        Las tiendas con fuente permitida traen precios reales; las demás siguen simuladas y marcadas
-        en cada oferta.
+        El servidor de Ñapa (<code>{{ apiUrl }}</code
+        >, NestJS en el plan gratuito de Render) consulta las tiendas con fuente permitida y trae
+        precios reales; las demás siguen simuladas y marcadas en cada oferta.
+      </p>
+      <p class="muted small">
+        El historial de precios reales vive en la memoria del servidor: se borra cuando el plan
+        gratuito se duerme, así que el veredicto de “descuento real” necesita días de uso continuo.
       </p>
     }
   </div>
@@ -70,7 +91,19 @@
                 {{ potential[r.store.id] ?? 'Simulada' }}
               </td>
               <td data-label="Adaptador" class="small">{{ adapter[r.store.liveSource] }}</td>
-              <td data-label="Por qué" class="small muted">{{ r.store.sourceNote }}</td>
+              <td data-label="Por qué" class="small muted">
+                {{ r.store.sourceNote }}
+                @if (r.status?.access; as access) {
+                  <span class="access" [attr.data-testid]="'access-' + r.store.id">
+                    Comprobado por el servidor ({{ checkedAt(access.checkedAt) }}):
+                    {{
+                      access.botBlocked
+                        ? 'HTTP ' + access.status + ', rechaza robots identificados.'
+                        : 'HTTP ' + (access.status || 'sin respuesta') + '.'
+                    }}
+                  </span>
+                }
+              </td>
             </tr>
           }
         </tbody>
@@ -80,18 +113,23 @@
 
   <div class="grid two">
     <div class="card">
-      <h2>Reglas que sigue el backend</h2>
+      <h2>Reglas que sigue el servidor</h2>
       <ul class="checks">
         <li>
           Revisa el <code>robots.txt</code> de cada tienda antes de pedir nada y respeta su
           intención. Si no lo puede leer, no consulta.
         </li>
         <li>
-          Solo APIs públicas u oficiales. <strong>No hace scraping</strong> de páginas ni de apps.
+          Solo APIs públicas u oficiales. <strong>No hace scraping</strong>, no se disfraza de
+          navegador, no resuelve captchas y no rota IPs.
         </li>
         <li>
-          Una petición cada 1,5 s por tienda, caché de 10 minutos y User-Agent que se identifica con
-          enlace al repositorio.
+          Solo consulta cuando alguien busca: como mucho una petición cada 2 s por tienda, caché de
+          1 hora y un User-Agent que se identifica con enlace al repositorio.
+        </li>
+        <li>
+          Para Éxito y Carulla solo pide, como mucho cada 12 h, el sitemap que su propio robots.txt
+          anuncia, para comprobar si aceptan robots identificados. Nunca su <code>/api/</code>.
         </li>
         <li>
           Si una fuente falla o la bloquean, esa tienda vuelve al simulado y la respuesta lo dice.
@@ -100,25 +138,25 @@
       </ul>
     </div>
     <div class="card">
-      <h2>Qué haría falta para salir en vivo</h2>
+      <h2>Qué falta para más tiendas en vivo</h2>
       <ul class="checks">
         <li>
-          <strong>Hosting</strong> para el backend (un contenedor pequeño: Render, Fly.io o Railway)
-          y poner su URL en <code>environment.ts</code>.
+          <strong>Mercado Libre</strong>: una app registrada en developers.mercadolibre.com.co y su
+          refresh token OAuth (la búsqueda puede seguir restringida por app).
         </li>
         <li>
-          <strong>Mercado Libre</strong>: registrar una app en developers.mercadolibre.com.co y un
-          refresh token OAuth; la búsqueda puede seguir restringida por app.
-        </li>
-        <li>
-          <strong>Éxito y Carulla</strong>: permiso o acuerdo de datos (su robots.txt prohíbe
-          <code>/api/</code>).
+          <strong>Éxito y Carulla</strong>: permiso escrito de Grupo Éxito para el robot de Ñapa, o
+          un convenio o feed de datos. Su robots.txt prohíbe <code>/api/</code> y las búsquedas, su
+          protección anti-bots rechaza robots identificados y sus términos son de uso personal.
         </li>
         <li>
           <strong>D1, Ara, Alkosto, Falabella, Shein, Temu</strong>: un convenio, feed de afiliados
           o API oficial.
         </li>
-        <li>Una base de datos para guardar el historial (hoy vive en memoria del backend).</li>
+        <li>
+          Una base de datos para que el historial de precios reales sobreviva a los reinicios (hoy
+          vive en memoria).
+        </li>
       </ul>
     </div>
   </div>

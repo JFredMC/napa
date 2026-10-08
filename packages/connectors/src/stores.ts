@@ -25,6 +25,12 @@ export interface StoreMeta extends StoreInfo {
    * los aplique al grupo `*` (la intención de la tienda es clara y se respeta).
    */
   respectDisallow?: readonly string[];
+  /**
+   * Página pública que su robots.txt sí permite (el sitemap que el propio robots.txt anuncia).
+   * El backend la pide de vez en cuando (máx. cada 12 h, a pedido) solo para comprobar si la
+   * tienda acepta a un robot que se identifica. No se descarga ni se recorre nada más.
+   */
+  accessProbeUrl?: string;
   /** Por qué la fuente es real, está bloqueada o es simulada. */
   sourceNote: string;
   /** Nombres en OpenStreetMap para reconocer sedes cercanas. Vacío = solo en línea. */
@@ -86,7 +92,8 @@ export const STORES: Record<string, StoreMeta> = {
     vtexOrigin: 'https://www.exito.com',
     respectDisallow: ['/api/'],
     sourceNote:
-      'Corre sobre VTEX y su catálogo responde en público, pero su robots.txt declara "Disallow: /api/" en su sección de APIs. Por cómo está escrito el archivo, esa línea técnicamente solo aplica a un bot; Ñapa respeta la intención: el adaptador existe y el backend no lo usa.',
+      'Su robots.txt prohíbe /api/ (el catálogo VTEX) y las búsquedas (/s?). Lo único permitido serían las fichas de producto y el sitemap que anuncia, pero su protección anti-bots responde HTTP 429 «rate-limit-reason: bot» a un robot que se identifica, y sus términos limitan el sitio al uso personal. Saltarse eso exigiría disfrazar el robot, así que queda simulada hasta tener permiso o un convenio con Grupo Éxito.',
+    accessProbeUrl: 'https://www.exito.com/sitemap/sitemap.xml',
     osm: ['Éxito', 'Exito', 'Éxito Express', 'Almacenes Éxito'],
     categories: [...GROCERY, 'tecnologia', 'electrohogar', 'hogar', 'moda'],
   },
@@ -103,7 +110,8 @@ export const STORES: Record<string, StoreMeta> = {
     vtexOrigin: 'https://www.carulla.com',
     respectDisallow: ['/api/'],
     sourceNote:
-      'Misma plataforma que Éxito (VTEX) y la misma regla en robots.txt (Disallow: /api/). El adaptador queda apagado.',
+      'Mismo grupo y plataforma que Éxito: robots.txt prohíbe /api/ y las búsquedas, la protección anti-bots responde 429 «bot» a un robot identificado y los términos son de uso personal. Queda simulada.',
+    accessProbeUrl: 'https://www.carulla.com/sitemap/sitemap.xml',
     osm: ['Carulla', 'Carulla Fresh Market', 'Carulla Express'],
     categories: [...GROCERY, 'hogar'],
   },

@@ -14,6 +14,7 @@
   <a href="https://jfredmc.github.io/napa/"><b>Ver la demo</b></a> ·
   <a href="#fuentes-qué-es-real-y-qué-es-simulado">Fuentes</a> ·
   <a href="#cómo-decide">Cómo decide</a> ·
+  <a href="#servidor-en-render">Servidor</a> ·
   <a href="#desarrollo">Desarrollo</a>
 </p>
 
@@ -24,9 +25,11 @@
 
 ![Ofertas de hoy](docs/screenshots/desktop-dark-ofertas.png)
 
-> **La demo usa precios simulados.** En GitHub Pages no hay backend: los precios, productos y marcas son
-> ficticios y así se marcan en cada oferta (`Simulado`). Las tiendas y las sedes del mapa sí son reales. Ñapa no
-> vende nada ni tiene relación con las tiendas.
+> **Precios reales donde se permite, simulados y marcados donde no.** La app en GitHub Pages se conecta al
+> servidor de Ñapa en Render (`https://napa-api.onrender.com`): Jumbo y Olímpica traen precios reales (`En vivo`).
+> Si el servidor está dormido aparece **“Despertando el servidor…”** y mientras tanto se ve la demo; si no
+> responde, se queda en la demo. En la demo los precios, productos y marcas son ficticios y así se marcan
+> (`Simulado`). Ñapa no vende nada ni tiene relación con las tiendas.
 
 ## Qué hace
 
@@ -57,24 +60,34 @@
 
 ## Fuentes: qué es real y qué es simulado
 
-Ñapa tiene un adaptador por tienda detrás de una interfaz común (`StoreConnector`). Solo hay adaptadores reales donde existe acceso público u oficial, y corren en el **backend local** (nunca en el navegador ni en Pages).
+Ñapa tiene un adaptador por tienda detrás de una interfaz común (`StoreConnector`). Solo hay adaptadores reales donde existe acceso público u oficial, y corren en el **servidor** (nunca en el navegador).
 
-| Tienda                                   | Adaptador real                  | Con el backend local         | Por qué                                                                                        |
-| ---------------------------------------- | ------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| Jumbo                                    | Catálogo público VTEX           | **En vivo**                  | Su robots.txt no prohíbe la API de catálogo.                                                   |
-| Olímpica                                 | Catálogo público VTEX           | **En vivo**                  | Su robots.txt prohíbe URLs con `&` o `%`: se consulta `?ft=palabra` y se filtra en el backend. |
-| Mercado Libre                            | API oficial (OAuth)             | En vivo **con credenciales** | Sin token de una app registrada responde 403.                                                  |
-| Éxito, Carulla                           | Catálogo público VTEX (apagado) | Simulada                     | Su robots.txt declara `Disallow: /api/`; Ñapa respeta la intención.                            |
-| D1, Ara, Alkosto, Falabella, Shein, Temu | —                               | Simulada                     | Sin API pública de catálogo. **No se hace scraping.**                                          |
+| Tienda                                   | Adaptador real                  | Hoy, con el servidor         | Por qué                                                                                                                                           |
+| ---------------------------------------- | ------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jumbo                                    | Catálogo público VTEX           | **En vivo**                  | Su robots.txt no prohíbe la API de catálogo.                                                                                                      |
+| Olímpica                                 | Catálogo público VTEX           | **En vivo**                  | Su robots.txt prohíbe URLs con `&` o `%`: se consulta `?ft=palabra` y se filtra en el servidor.                                                   |
+| Mercado Libre                            | API oficial (OAuth)             | En vivo **con credenciales** | Sin token de una app registrada responde 403. Ver [cómo crear la app](#mercado-libre-credenciales).                                               |
+| Éxito, Carulla                           | Catálogo público VTEX (apagado) | Simulada                     | robots.txt prohíbe `/api/` y las búsquedas; su anti-bots responde `429 rate-limit-reason: bot` a un robot identificado; términos de uso personal. |
+| D1, Ara, Alkosto, Falabella, Shein, Temu | —                               | Simulada                     | Sin API pública de catálogo. **No se hace scraping.**                                                                                             |
 
-Reglas del backend: revisa `robots.txt` antes de cada dominio (y no consulta si no lo puede leer), una petición cada 1,5 s por tienda, caché de 10 minutos, 60 peticiones por minuto por cliente, User-Agent que se identifica, y si una fuente falla esa tienda vuelve al simulado y la respuesta lo dice. Los precios reales solo se comparan con precios reales.
+Reglas del servidor: revisa `robots.txt` antes de cada dominio (y no consulta si no lo puede leer); solo consulta cuando alguien busca; como mucho una petición cada 2 s por tienda; caché de 1 hora; 60 peticiones por minuto por cliente; User-Agent que se identifica (`NapaBot/0.1 (+https://github.com/JFredMC/napa)`); no se disfraza de navegador, no resuelve captchas y no rota IPs. Si una fuente falla, esa tienda vuelve al simulado y la respuesta lo dice. Los precios reales solo se comparan con precios reales.
 
-**Qué haría falta para salir en vivo**
+### Éxito y Carulla: por qué siguen simuladas
 
-1. **Hosting** para `apps/api` (un contenedor pequeño en Render, Fly.io o Railway) y su URL en `apps/web/src/environments/environment.ts` (`apiUrl`). La app muestra entonces el selector Demo/API.
-2. **Mercado Libre**: registrar una app en developers.mercadolibre.com.co y configurar `ML_CLIENT_ID`, `ML_CLIENT_SECRET` y `ML_REFRESH_TOKEN`.
-3. **Éxito y Carulla**: permiso o acuerdo de datos. **D1, Ara, Alkosto, Falabella, Shein y Temu**: convenio, feed de afiliados o API oficial.
-4. Una base de datos para el historial de precios observado (hoy vive en memoria del backend).
+Revisado el 8 de octubre de 2026:
+
+1. **robots.txt** (`User-agent: *`) prohíbe `/api/` (donde vive el catálogo VTEX), las búsquedas (`/s?`), los filtros y las colecciones. Lo único permitido serían las fichas de producto y los sitemaps que anuncia.
+2. **Anti-bots**: esas páginas permitidas, incluido el sitemap que el propio robots.txt anuncia, responden `HTTP 429` con `rate-limit-reason: bot` a un robot que se identifica. Pasar de ahí exigiría hacerse pasar por un navegador, y Ñapa no lo hace. El servidor guarda la última comprobación (como mucho una cada 12 h, a pedido) y la muestra en la página Fuentes.
+3. **Términos y condiciones** de exito.com: el uso del sitio es “exclusivamente para su uso personal”.
+4. No hay feed público de productos: **Referidos Éxito** es de cashback y la **API de Marketplace** de Éxito (Seller Center) solo da acceso a los productos del propio vendedor.
+
+Para tenerlas en vivo haría falta **permiso escrito de Grupo Éxito** para el robot de Ñapa (o que lo pongan en su lista permitida), o un **convenio o feed de datos** con su área comercial o de e-commerce.
+
+**Qué falta para más tiendas en vivo**
+
+1. **Mercado Libre**: credenciales de una app (abajo).
+2. **Éxito y Carulla**: permiso o convenio con Grupo Éxito. **D1, Ara, Alkosto, Falabella, Shein y Temu**: convenio, feed de afiliados o API oficial.
+3. Una base de datos para el historial de precios reales: hoy vive en la memoria del servidor y se borra cuando el plan gratuito se duerme.
 
 ## Cómo decide
 
@@ -93,20 +106,47 @@ Todo vive en [`packages/deals-engine`](packages/deals-engine): TypeScript puro, 
 
 Los datos simulados son deterministas por día: mismas marcas ficticias, 120 días de historial y cuatro escenarios por oferta (promoción real, “antes” inflado que nunca se cobró, subida antes de la rebaja o precio normal).
 
+## Servidor en Render
+
+`apps/api` (NestJS 11) corre en el plan gratuito de Render con el Blueprint [`render.yaml`](render.yaml): servicio `napa-api`, rama `main`, instala desde la raíz del monorepo y construye solo la API.
+
+| Ajuste       | Valor                                                                                                                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build        | `pnpm install --frozen-lockfile --prod=false --filter @napa/api... && pnpm --filter @napa/deals-engine build && pnpm --filter @napa/connectors build && pnpm --filter @napa/api build` |
+| Start        | `node apps/api/dist/main.js`                                                                                                                                                           |
+| Health check | `/api/health`                                                                                                                                                                          |
+| Variables    | `NODE_VERSION=22`, `CORS_ORIGINS=https://jfredmc.github.io`, `LIVE_STORES=jumbo,olimpica,exito,carulla`, `CACHE_TTL_MS=3600000`, `UPSTREAM_INTERVAL_MS=2000`, `CLIENT_RPM=60`          |
+| Secretos     | `ML_CLIENT_ID`, `ML_CLIENT_SECRET`, `ML_REFRESH_TOKEN` (opcionales; se ponen en el panel de Render, nunca en el repositorio)                                                           |
+
+Endpoints: `GET /api/search?q=arroz&category=despensa&stores=jumbo,olimpica&limit=24`, `GET /api/sources` y `GET /api/health`.
+
+**Arranque en frío.** El plan gratuito se duerme tras 15 minutos sin uso y tarda hasta un minuto en despertar. La web pregunta a `/api/health`: si responde, usa el modo API; si tarda más de 1,5 s muestra “Despertando el servidor…” con la demo mientras tanto; si en 75 s no responde, se queda en la demo y ofrece reintentar. El selector Demo/API recuerda la elección.
+
+### Mercado Libre: credenciales
+
+1. Entrar a [developers.mercadolibre.com.co](https://developers.mercadolibre.com.co/) con la cuenta de Mercado Libre Colombia y abrir **Mis aplicaciones → Crear aplicación**.
+2. Nombre `Ñapa`, nombre corto `napa`, descripción breve, URL de redirección `https://jfredmc.github.io/napa/` (no se usa más que para recibir el código), permisos de **lectura** y **acceso offline** (para recibir refresh token); sin notificaciones.
+3. Copiar el **App ID** (`ML_CLIENT_ID`) y la **Secret Key** (`ML_CLIENT_SECRET`).
+4. Autorizar la app abriendo `https://auth.mercadolibre.com.co/authorization?response_type=code&client_id=APP_ID&redirect_uri=https://jfredmc.github.io/napa/` y copiar el `code=` de la URL a la que vuelve.
+5. Cambiar el código por tokens (vence en minutos):
+   `curl -X POST https://api.mercadolibre.com/oauth/token -d grant_type=authorization_code -d client_id=APP_ID -d client_secret=SECRET -d code=CODE -d redirect_uri=https://jfredmc.github.io/napa/`
+   y guardar el `refresh_token` de la respuesta (`ML_REFRESH_TOKEN`).
+6. Poner los tres valores como variables secretas del servicio `napa-api` en Render. El refresh token es de un solo uso y el servidor lo renueva en memoria; si el servicio se reinicia mucho tiempo después, puede hacer falta repetir los pasos 4 y 5.
+
 ## Arquitectura
 
 ```
 napa/
 ├── packages/deals-engine   Motor: precio por unidad, historial, descuentos, puntaje, ranking, lista, alertas, geo
 ├── packages/connectors     Interfaz StoreConnector, un adaptador por tienda (VTEX, Mercado Libre, simulados)
-├── apps/api                NestJS 11, solo local: proxy CORS, robots.txt, caché, límite de ritmo, historial
+├── apps/api                NestJS 11 en Render: proxy CORS, robots.txt, caché, límite de ritmo, historial en memoria
 └── apps/web                Angular 22: standalone, signals, zoneless, OnPush
     ├── core/               Catálogo (demo o API), listas, ubicación, tema, formato
     ├── shared/             Tarjeta de oferta, gráfica SVG propia, distintivos
     └── features/           ofertas · producto · lista · guardados · cerca · fuentes
 ```
 
-- Demo sin backend en GitHub Pages (`base href` `/napa/` y `404.html` para las rutas). MapLibre se carga solo en “Cerca”.
+- Web en GitHub Pages (`base href` `/napa/` y `404.html` para las rutas) con modo API (servidor en Render) y demo de respaldo. MapLibre se carga solo en “Cerca”.
 - La ubicación solo se pide al tocar el botón, se usa una vez para consultar Overpass y no se guarda.
 - Favoritos, alertas y lista quedan en `localStorage`.
 
@@ -135,7 +175,7 @@ pnpm --filter @napa/web e2e
 E2E_BASE_URL=https://jfredmc.github.io/napa/ pnpm --filter @napa/web e2e
 ```
 
-CI corre formato, lint, typecheck, pruebas, build, la suite E2E de la API y la de la web en cada PR. Después de cada despliegue, la suite web se repite contra el sitio publicado. Las pruebas no tocan tiendas reales: la API usa un `fetch` falso y la web responde Overpass con sedes reales de OpenStreetMap guardadas en `e2e/fixtures`.
+CI corre formato, lint, typecheck, pruebas, build, la suite E2E de la API y la de la web en cada PR. Después de cada despliegue, la suite web se repite contra el sitio publicado. Las pruebas no tocan tiendas reales: la API usa un `fetch` falso y la web responde Overpass con sedes reales de OpenStreetMap y el servidor con respuestas reales capturadas, guardadas en `e2e/fixtures` (modo API, “despertando”, servidor caído y demo). Con la variable de repositorio `E2E_REAL_API=1`, la corrida en vivo además prueba el servidor real en Render.
 
 ## Licencia
 

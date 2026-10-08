@@ -6,6 +6,7 @@ import { fakeFetch } from './fake-fetch';
 
 describe('API (e2e)', () => {
   let app: INestApplication;
+  const fetchFn = fakeFetch();
 
   beforeAll(async () => {
     const config = {
@@ -15,7 +16,7 @@ describe('API (e2e)', () => {
     };
     app = await createApp({
       config,
-      fetch: fakeFetch(),
+      fetch: fetchFn,
       clock: () => new Date('2026-10-07T15:00:00Z'),
     });
     await app.init();
@@ -53,6 +54,14 @@ describe('API (e2e)', () => {
     const res = await request(app.getHttpServer()).get('/api/sources').expect(200);
     const exito = res.body.find((s: { storeId: string }) => s.storeId === 'exito');
     expect(exito.mode).toBe('blocked');
+    expect(exito.access).toMatchObject({ status: 429, botBlocked: true });
+    expect(exito.reason).toContain('anti-bots');
+    // La comprobación se guarda 12 h: una segunda consulta no vuelve a tocar la tienda.
+    await request(app.getHttpServer()).get('/api/sources').expect(200);
+    expect(fetchFn.calls.filter((u) => u.endsWith('/sitemap/sitemap.xml'))).toEqual([
+      'https://www.exito.com/sitemap/sitemap.xml',
+      'https://www.carulla.com/sitemap/sitemap.xml',
+    ]);
   });
 
   it('limita peticiones por cliente (429)', async () => {

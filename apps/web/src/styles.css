@@ -379,12 +379,46 @@ s {
 .demo-banner.api i {
   color: var(--ok);
 }
-.demo-banner span {
+.demo-banner .inner > span:not(.spinner) {
   flex: 1;
 }
-.demo-banner a {
+.demo-banner a,
+.demo-banner button.link {
   white-space: nowrap;
   font-weight: 600;
+}
+.demo-banner button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent, inherit);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+.demo-banner.waking {
+  background: color-mix(in srgb, var(--accent, #2563eb) 12%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent, #2563eb) 35%, transparent);
+}
+.spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: napa-spin 0.8s linear infinite;
+}
+@keyframes napa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
 }
 
 .footer {
@@ -1802,4 +1836,10 @@ table.sources td:last-child {
     animation: none !important;
     transition: none !important;
   }
+}
+
+.sources .access {
+  display: block;
+  margin-top: 4px;
+  color: var(--warn);
 }

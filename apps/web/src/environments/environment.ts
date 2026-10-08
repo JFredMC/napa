@@ -1,7 +1,7 @@
 /**
- * Build de producción (GitHub Pages): sin backend, solo modo demo con precios simulados.
- * Si el backend llega a tener hosting, poner aquí su URL para habilitar el selector Demo/API.
+ * Build de producción (GitHub Pages). El backend NestJS corre en el plan gratuito de Render
+ * (ver render.yaml). Si Render asigna otra URL al servicio, cambiarla aquí.
  */
 export const environment = {
-  apiUrl: null as string | null,
+  apiUrl: 'https://napa-api.onrender.com' as string | null,
 };

@@ -32,6 +32,17 @@ export interface SourceStatus {
   mode: SourceMode;
   reason: string;
   count?: number;
+  /** Última comprobación de acceso a una página pública permitida (solo Éxito y Carulla). */
+  access?: AccessProbe;
+}
+
+export interface AccessProbe {
+  url: string;
+  /** Código HTTP, o 0 si no hubo respuesta. */
+  status: number;
+  /** La tienda rechazó al robot por ser un robot (p. ej. 429 con rate-limit-reason: bot). */
+  botBlocked: boolean;
+  checkedAt: string;
 }
 
 export interface SearchResult {
@@ -56,10 +67,12 @@ export class SearchService {
   private readonly cache: TtlCache<{ offers: Offer[]; status: SourceStatus }>;
   private readonly throttle: HostThrottle;
   private readonly prices = new PriceLog();
+  /** Comprobaciones de acceso: como mucho una cada 12 h por tienda, y solo cuando alguien la pide. */
+  private readonly probes: TtlCache<Promise<AccessProbe>>;
 
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
-    @Inject(FETCH) fetchFn: FetchLike,
+    @Inject(FETCH) private readonly fetchFn: FetchLike,
     @Inject(CLOCK) private readonly clock: () => Date,
     private readonly robots: RobotsService,
   ) {
@@ -68,6 +81,7 @@ export class SearchService {
     );
     this.cache = new TtlCache(config.cacheTtlMs, 500, () => this.clock().getTime());
     this.throttle = new HostThrottle(config.upstreamIntervalMs);
+    this.probes = new TtlCache(12 * 3_600_000, 20, () => this.clock().getTime());
 
     for (const id of config.liveStores) {
       const store = STORES[id];
@@ -115,11 +129,19 @@ export class SearchService {
             reason: this.simulatedReason(id),
           };
         if (adapter.check && !(await adapter.check({ q: 'arroz' }))) {
+          const access = store.accessProbeUrl
+            ? await this.probeAccess(store.accessProbeUrl)
+            : undefined;
           return {
             storeId: id,
             name: store.name,
             mode: 'blocked',
-            reason: 'Su robots.txt no permite consultar el catálogo; se usa el simulado.',
+            reason:
+              'Su robots.txt no permite consultar el catálogo; se usa el simulado.' +
+              (access?.botBlocked
+                ? ` Además, su protección anti-bots rechaza a un robot identificado (HTTP ${access.status}).`
+                : ''),
+            ...(access ? { access } : {}),
           };
         }
         return { storeId: id, name: store.name, mode: 'live', reason: 'Fuente real configurada.' };
@@ -197,6 +219,35 @@ export class SearchService {
     }
     this.cache.set(key, result);
     return result;
+  }
+
+  /**
+   * Pide una sola página pública que robots.txt permite (el sitemap que el propio robots.txt
+   * anuncia), con el User-Agent honesto y sin leer el cuerpo, para saber si la tienda acepta
+   * robots identificados. No se reintenta, no se cambia de identidad y no se recorre nada.
+   */
+  private probeAccess(url: string): Promise<AccessProbe> {
+    const cached = this.probes.get(url);
+    if (cached) return cached;
+    const host = new URL(url).host;
+    const run = this.throttle.run(host, async (): Promise<AccessProbe> => {
+      const checkedAt = this.clock().toISOString();
+      try {
+        const res = await this.fetchFn(url, {
+          headers: { 'user-agent': this.config.userAgent },
+          signal: AbortSignal.timeout(8000),
+        });
+        void res.body?.cancel().catch(() => undefined);
+        const reason = res.headers.get('rate-limit-reason') ?? '';
+        const botBlocked =
+          /bot/i.test(reason) || res.status === 403 || (res.status === 429 && !reason);
+        return { url, status: res.status, botBlocked, checkedAt };
+      } catch {
+        return { url, status: 0, botBlocked: false, checkedAt };
+      }
+    });
+    this.probes.set(url, run);
+    return run;
   }
 
   private simulatedReason(id: string): string {

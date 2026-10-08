@@ -1,0 +1,55 @@
+# Blueprint de Render para el backend de Ñapa (plan gratuito).
+# En Render: New → Blueprint → repositorio JFredMC/napa, rama main. Pide los valores marcados
+# con `sync: false` (credenciales de Mercado Libre); si se dejan vacíos, Mercado Libre queda simulado.
+services:
+  - type: web
+    name: napa-api
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    autoDeploy: true
+    # Se instala desde la raíz del monorepo (lockfile y paquetes compartidos) y solo se construye la API.
+    buildCommand: >-
+      pnpm install --frozen-lockfile --prod=false --filter @napa/api... &&
+      pnpm --filter @napa/deals-engine build &&
+      pnpm --filter @napa/connectors build &&
+      pnpm --filter @napa/api build
+    startCommand: node apps/api/dist/main.js
+    healthCheckPath: /api/health
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/**
+        - pnpm-lock.yaml
+        - package.json
+        - render.yaml
+      ignoredPaths:
+        - apps/api/test/**
+        - '**/*.spec.ts'
+        - '**/*.md'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      - key: CORS_ORIGINS
+        value: https://jfredmc.github.io
+      # Éxito y Carulla siguen en la lista para que /api/sources explique por qué están bloqueadas
+      # (robots.txt + protección anti-bots); el backend nunca consulta su /api/.
+      - key: LIVE_STORES
+        value: jumbo,olimpica,exito,carulla
+      - key: USER_AGENT
+        value: NapaBot/0.1 (+https://github.com/JFredMC/napa)
+      - key: CACHE_TTL_MS
+        value: '3600000'
+      - key: UPSTREAM_INTERVAL_MS
+        value: '2000'
+      - key: CLIENT_RPM
+        value: '60'
+      - key: ML_CLIENT_ID
+        sync: false
+      - key: ML_CLIENT_SECRET
+        sync: false
+      - key: ML_REFRESH_TOKEN
+        sync: false

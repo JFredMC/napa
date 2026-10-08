@@ -3,7 +3,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { App } from './app';
 import { routes } from './app.routes';
-import { API_URL, DEALS_MODE } from './core/mode';
+import { API_URL, MODE_PREFERENCE } from './core/mode';
 
 describe('Ñapa', () => {
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('Ñapa', () => {
       providers: [
         provideRouter(routes, withComponentInputBinding()),
         { provide: API_URL, useValue: null },
-        { provide: DEALS_MODE, useValue: 'demo' },
+        { provide: MODE_PREFERENCE, useValue: 'demo' },
       ],
     });
   });
