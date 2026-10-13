@@ -1,4 +1,4 @@
-import { matchesTerm, searchTerms } from './channel';
+import { absurdUnitPrice, matchesTerm, searchTerms } from './channel';
 
 describe('matchesTerm', () => {
   it('acepta el producto y rechaza lo que solo menciona el término', () => {
@@ -11,5 +11,13 @@ describe('matchesTerm', () => {
   });
   it('searchTerms toma las tres primeras palabras', () => {
     expect(searchTerms('Arroz Roa x1kg premium')).toBe('Arroz Roa x1kg');
+  });
+});
+
+describe('absurdUnitPrice', () => {
+  it('descarta precios por kilo imposibles', () => {
+    expect(absurdUnitPrice({ price: 97015, size: { amount: 200, unit: 'g' } })).toBe(true);
+    expect(absurdUnitPrice({ price: 4890, size: { amount: 1000, unit: 'g' } })).toBe(false);
+    expect(absurdUnitPrice({ price: 97015 })).toBe(false);
   });
 });
