@@ -45,7 +45,7 @@
           </button>
           <button
             type="button"
-            [class.on]="catalog.mode() === 'api'"
+            [class.on]="catalog.mode() !== 'demo'"
             (click)="switchMode('api')"
             data-testid="mode-api"
           >
@@ -94,7 +94,13 @@
           duerme tras 15 min sin uso y tarda hasta un minuto en arrancar ({{
             catalog.wakingSeconds()
           }}
-          s). Mientras tanto ves la demo: precios <strong>simulados</strong>.
+          s).
+          @if (catalog.mode() === 'snapshot') {
+            Mientras tanto ves los <strong>precios reales guardados</strong> el
+            {{ bogotaDateTime(catalog.snapshotAt()) }}.
+          } @else {
+            Mientras tanto ves la demo: precios <strong>simulados</strong>.
+          }
         </span>
         <button type="button" class="link" (click)="switchMode('demo')" data-testid="stay-demo">
           Quedarme en demo
@@ -123,25 +129,47 @@
     </div>
   }
   @default {
-    <div class="demo-banner" role="note" data-testid="demo-banner">
-      <div class="inner">
-        <i class="bi bi-info-circle" aria-hidden="true"></i>
-        <span>
-          <strong>Modo demo:</strong> todos los precios son <strong>simulados</strong> con productos
-          y marcas ficticias. No son precios reales vigentes.
+    @if (catalog.mode() === 'snapshot') {
+      <div class="demo-banner api" role="note" data-testid="snapshot-banner">
+        <div class="inner">
+          <i class="bi bi-clock-history" aria-hidden="true"></i>
+          <span>
+            <strong>Precios reales guardados</strong> el {{ bogotaDateTime(catalog.snapshotAt()) }}
+            (hora de Colombia) de Jumbo y Olímpica. Pueden haber cambiado: confírmalos en la tienda.
+            @if (catalog.connection() === 'down') {
+              <span data-testid="server-down">El servidor de precios no respondió a tiempo.</span>
+            }
+          </span>
           @if (catalog.connection() === 'down') {
-            <span data-testid="server-down">El servidor de precios no respondió a tiempo.</span>
+            <button type="button" class="link" (click)="retry()" data-testid="retry-api">
+              Reintentar
+            </button>
+          } @else {
+            <a routerLink="/fuentes">Ver fuentes</a>
           }
-        </span>
-        @if (catalog.connection() === 'down') {
-          <button type="button" class="link" (click)="retry()" data-testid="retry-api">
-            Reintentar
-          </button>
-        } @else {
-          <a routerLink="/fuentes">¿Por qué?</a>
-        }
+        </div>
       </div>
-    </div>
+    } @else {
+      <div class="demo-banner" role="note" data-testid="demo-banner">
+        <div class="inner">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>
+            <strong>Modo demo:</strong> todos los precios son <strong>simulados</strong> con
+            productos y marcas ficticias. No son precios reales vigentes.
+            @if (catalog.connection() === 'down') {
+              <span data-testid="server-down">El servidor de precios no respondió a tiempo.</span>
+            }
+          </span>
+          @if (catalog.connection() === 'down') {
+            <button type="button" class="link" (click)="retry()" data-testid="retry-api">
+              Reintentar
+            </button>
+          } @else {
+            <a routerLink="/fuentes">¿Por qué?</a>
+          }
+        </div>
+      </div>
+    }
   }
 }
 

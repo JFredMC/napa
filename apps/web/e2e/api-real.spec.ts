@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test-base';
 
 /**
  * Humo contra el servidor real en Render (sin simular nada). Solo corre con E2E_REAL_API=1,

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CATEGORY_LABEL, STORES } from '@napa/connectors';
 import {
@@ -13,6 +21,7 @@ import {
 import { CatalogStore } from '../../core/catalog.store';
 import { cop, pct, shortDate, unitLabel } from '../../core/format';
 import { ListsStore } from '../../core/lists.store';
+import { Seo } from '../../core/seo';
 import { PriceChart } from '../../shared/price-chart';
 import { StoreLink } from '../../shared/store-link';
 import { AdSlot } from '../../shared/ad-slot';
@@ -44,6 +53,7 @@ export class ProductPage {
   protected readonly lists = inject(ListsStore);
   private readonly toast = inject(Toast);
   private readonly router = inject(Router);
+  private readonly seo = inject(Seo);
   protected readonly stores = STORES;
   protected readonly cop = cop;
   protected readonly pct = pct;
@@ -93,6 +103,44 @@ export class ProductPage {
   protected readonly target = computed(
     () => this.targetDraft() ?? this.watch()?.target ?? this.suggested(),
   );
+
+  constructor() {
+    effect(() => {
+      const p = this.product();
+      const offers = this.rows().map((r) => r.item.offer);
+      const live = offers.filter((o) => o.source === 'live');
+      const path = `producto/${encodeURIComponent(this.key())}`;
+      if (!p) {
+        this.seo.set({
+          title: 'Comparar precios · Ñapa',
+          description: 'Compara el precio de un producto en las tiendas de Colombia.',
+          path,
+          noindex: true,
+        });
+        return;
+      }
+      const best = live.length ? Math.min(...live.map((o) => o.price)) : p.price;
+      const where = STORES[live.find((o) => o.price === best)?.storeId ?? p.storeId]?.name ?? '';
+      const n = new Set(offers.map((o) => o.storeId)).size;
+      const ld = this.seo.product(live);
+      this.seo.set({
+        title: `${p.title}: precio hoy ${live.length ? 'desde ' + cop(best) : ''} · Ñapa`.replace(
+          '  ',
+          ' ',
+        ),
+        description:
+          `${p.title}${p.brand ? ' (' + p.brand + ')' : ''}: ${cop(best)} en ${where}` +
+          (n > 1 ? `, comparado con ${n - 1} ${n === 2 ? 'tienda más' : 'tiendas más'}` : '') +
+          '. Historial del precio y si el descuento es real, en Ñapa.',
+        path,
+        image: live.find((o) => o.image)?.image ?? null,
+        type: 'product',
+        // Precios simulados (productos ficticios): nunca se indexan.
+        noindex: !live.length,
+        jsonLd: ld ? [ld] : [],
+      });
+    });
+  }
 
   protected unit(price: number, size: Parameters<typeof unitPrice>[1]): string {
     return unitLabel(unitPrice(price, size));

@@ -20,6 +20,7 @@ import {
 import { CatalogStore } from '../../core/catalog.store';
 import { CATEGORY_ICON, cop, pct } from '../../core/format';
 import { LocationStore } from '../../core/location.store';
+import { Seo } from '../../core/seo';
 import { AdSlot } from '../../shared/ad-slot';
 import { OfferCard } from '../../shared/offer-card';
 import { StoreLink } from '../../shared/store-link';
@@ -34,6 +35,10 @@ const SORTS: { id: SortKey; label: string }[] = [
 
 const PAGE = 24;
 
+function asCategory(c: string | null): CategoryId | null {
+  return c && (CATEGORY_IDS as string[]).includes(c) ? (c as CategoryId) : null;
+}
+
 @Component({
   selector: 'app-deals-page',
   imports: [OfferCard, RouterLink, AdSlot, StoreLink],
@@ -43,6 +48,7 @@ const PAGE = 24;
 export class DealsPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly seo = inject(Seo);
   protected readonly catalog = inject(CatalogStore);
   protected readonly location = inject(LocationStore);
   protected readonly cop = cop;
@@ -57,11 +63,11 @@ export class DealsPage {
   protected readonly showFilters = signal(false);
 
   private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
+  private readonly pathParams = toSignal(this.route.paramMap, { requireSync: true });
   protected readonly q = computed(() => this.params().get('q') ?? '');
-  protected readonly cat = computed(() => {
-    const c = this.params().get('cat');
-    return c && (CATEGORY_IDS as string[]).includes(c) ? (c as CategoryId) : null;
-  });
+  /** /categoria/:cat (página indexable); `?cat=` se mantiene por enlaces viejos. */
+  protected readonly routeCat = computed(() => asCategory(this.pathParams().get('cat')));
+  protected readonly cat = computed(() => this.routeCat() ?? asCategory(this.params().get('cat')));
   protected readonly selectedStores = computed(() =>
     (this.params().get('tiendas') ?? '').split(',').filter((s) => STORE_IDS.includes(s)),
   );
@@ -126,6 +132,7 @@ export class DealsPage {
   });
 
   constructor() {
+    effect(() => this.updateSeo());
     // Modo API: cada búsqueda va al backend (con caché allá).
     effect(() => {
       if (this.catalog.connection() === 'ready')
@@ -134,6 +141,41 @@ export class DealsPage {
     effect(() => {
       this.results();
       this.shown.set(PAGE);
+    });
+  }
+
+  private updateSeo(): void {
+    const cat = this.routeCat();
+    const label = cat ? CATEGORY_LABEL[cat] : null;
+    const live = this.results()
+      .filter((s) => s.offer.source === 'live')
+      .slice(0, 20);
+    const filtered = !!(this.q() || this.params().keys.some((k) => k !== 'cat'));
+    const items = cat ? live : this.top().filter((s) => s.offer.source === 'live');
+    const cheapest = live.length ? Math.min(...live.map((s) => s.offer.price)) : null;
+    this.seo.set({
+      title: label
+        ? `Ofertas de ${label} en Colombia hoy · Ñapa`
+        : 'Ñapa · Ofertas reales en Colombia',
+      description: label
+        ? `Compara precios de ${label.toLowerCase()} en supermercados y tiendas de Colombia` +
+          (cheapest !== null ? ` desde ${cop(cheapest)}` : '') +
+          '. Ñapa detecta descuentos inflados con el historial de precios.'
+        : 'Compara precios de supermercados y tiendas de Colombia, detecta descuentos inflados con el historial de precios y encuentra dónde sale más barato, con envío incluido.',
+      path: cat ? `categoria/${cat}` : '',
+      // Búsquedas y filtros: no se indexan (la página canónica es la de inicio o la categoría).
+      noindex: filtered || (!!cat && !live.length && this.catalog.mode() === 'snapshot'),
+      jsonLd: [
+        ...(cat ? [] : [this.seo.website()]),
+        ...(items.length
+          ? [
+              this.seo.itemList(
+                label ? `Ofertas de ${label}` : 'Top de ofertas de hoy',
+                items.map((s) => s.offer),
+              ),
+            ]
+          : []),
+      ],
     });
   }
 

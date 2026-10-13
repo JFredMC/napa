@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CATEGORY_LABEL } from '@napa/connectors';
 import { checkWatches } from '@napa/deals-engine';
 import { CatalogStore } from '../../core/catalog.store';
+import { Seo } from '../../core/seo';
 import { cop, shortDate } from '../../core/format';
 import { ListsStore } from '../../core/lists.store';
 import { Toast } from '../../shared/toast';
@@ -17,6 +18,7 @@ import { SourceTag, StoreChip, Thumb, Verdict } from '../../shared/ui';
 export class SavedPage {
   readonly tab = input<string | undefined>(undefined);
   protected readonly catalog = inject(CatalogStore);
+  private readonly seo = inject(Seo);
   protected readonly lists = inject(ListsStore);
   private readonly toast = inject(Toast);
   private readonly router = inject(Router);
@@ -61,5 +63,14 @@ export class SavedPage {
   protected removeWatch(key: string): void {
     this.lists.removeWatch(key);
     this.toast.show('Alerta eliminada');
+  }
+
+  constructor() {
+    this.seo.set({
+      title: 'Favoritos y alertas · Ñapa',
+      description: 'Tus productos favoritos y alertas de precio, guardados en tu navegador.',
+      path: 'guardados',
+      noindex: true,
+    });
   }
 }

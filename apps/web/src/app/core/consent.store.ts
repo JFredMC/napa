@@ -1,4 +1,5 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { SITE_CONFIG, needsConsent } from './site-config';
 import { readJson, writeJson } from './storage';
 
@@ -29,8 +30,10 @@ export class ConsentStore {
   readonly consent = signal<Consent | null>(this.load());
   /** Panel de preferencias abierto. */
   readonly editing = signal(false);
+  /** Al prerenderizar no se sabe qué decidió cada quien: el aviso lo pinta el navegador. */
+  private readonly server = isPlatformServer(inject(PLATFORM_ID));
   readonly showBanner = computed(
-    () => this.required && (this.consent() === null || this.editing()),
+    () => !this.server && this.required && (this.consent() === null || this.editing()),
   );
   readonly analytics = computed(() => this.consent()?.analytics ?? false);
   readonly ads = computed(() => this.consent()?.ads ?? false);

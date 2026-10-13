@@ -163,6 +163,20 @@ Variables del repositorio (Settings → Secrets and variables → Actions → Va
 
 En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_<TIENDA>` para los enlaces del canal.
 
+## SEO: páginas prerenderizadas (SSG)
+
+- `pnpm --filter @napa/web build:pages` prerenderiza con `@angular/ssr` (salida estática) el inicio, `/categoria/:cat`, `/fuentes`, las páginas legales y una página por producto de la **foto de precios reales** (`apps/web/src/snapshot.json`, solo ofertas en vivo de Jumbo y Olímpica).
+- `scripts/snapshot.mjs` pide esa foto al backend (que respeta robots y ritmo de cada tienda). El workflow de Pages la renueva en cada despliegue y cada día a las 6:00 a. m. (Colombia); si Render no responde, se usa la del repositorio.
+- Cada página tiene título, descripción, canónica, Open Graph y JSON-LD (`WebSite` + `ItemList` en inicio y categorías, `Product`/`AggregateOffer` en COP solo con precios reales). Búsquedas filtradas y productos simulados llevan `noindex`.
+- `sitemap.xml` incluye categorías y productos. `robots.txt` excluye lista y guardados. Las rutas quedan como `ruta.html` (URLs limpias en GitHub Pages) y `404.html` es la app sin prerenderizar.
+- Mientras el servidor gratuito despierta, la web muestra esa foto (“Precios reales guardados el …”) en vez de la demo.
+
+### Dominio propio
+
+1. Variable `NAPA_SITE_URL=https://tu-dominio/` (repo → Settings → Variables). El build cambia el base href, las canónicas, el sitemap y genera `CNAME`.
+2. Repo → Settings → Pages → Custom domain (con despliegue por Actions el archivo CNAME no basta) y DNS: `CNAME www → jfredmc.github.io` o registros A/AAAA del apex a GitHub Pages. Activar “Enforce HTTPS”.
+3. En Render: agregar el dominio a `CORS_ORIGINS` y poner `SITE_URL`.
+
 ## Arquitectura
 
 ```

@@ -15,6 +15,8 @@ export class ThemeStore {
   constructor() {
     effect(() => {
       const t = this.theme();
+      // Al prerenderizar no hay documento real: el tema lo pone el script de index.html.
+      if (typeof document === 'undefined') return;
       document.documentElement.dataset['theme'] = t;
       document
         .querySelector('meta[name="theme-color"]')

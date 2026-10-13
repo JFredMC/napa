@@ -1,5 +1,5 @@
 // Serves dist/pages like GitHub Pages does: under /napa/, static files
-// only, and 404.html (with status 404) for anything else.
+// only (/x also serves x.html), and 404.html (with status 404) for anything else.
 // Used by the demo Playwright suite: `pnpm serve:pages` after `pnpm build:pages`.
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -39,6 +39,8 @@ createServer((req, res) => {
   if (path.startsWith(base)) {
     const relative = normalize(path.slice(base.length)).replace(/^(\.\.[/\\])+/, '');
     let file = join(root, relative);
+    // Igual que GitHub Pages: /ruta sirve ruta.html; un directorio, su index.html.
+    if (!existsSync(file) && existsSync(file + '.html')) file += '.html';
     if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html');
     if (existsSync(file) && statSync(file).isFile()) return send(res, 200, file);
   }

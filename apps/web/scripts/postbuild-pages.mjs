@@ -1,21 +1,62 @@
 // Archivos estáticos que GitHub Pages necesita junto al build.
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { join, relative } from 'node:path';
 
 export const out = new URL('../dist/web/browser/', import.meta.url).pathname;
 
 /** Rutas públicas e indexables (las de datos personales del navegador quedan fuera). */
 export const STATIC_ROUTES = ['', 'fuentes', 'privacidad', 'terminos', 'afiliados', 'cookies'];
 
+/** Todos los .html del build (recursivo). */
+function htmlFiles(dir) {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) return htmlFiles(path);
+    return name.endsWith('.html') ? [path] : [];
+  });
+}
+
+/**
+ * Angular escribe cada ruta prerenderizada como `ruta/index.html`; GitHub Pages respondería
+ * `/ruta` con una redirección a `/ruta/`. Como `ruta.html` se sirve directo en `/ruta`, se mueven
+ * (URLs limpias, iguales a las del router y a las canónicas).
+ */
+export function flattenRoutes(dir = out) {
+  let moved = 0;
+  for (const file of htmlFiles(dir)) {
+    const rel = relative(dir, file);
+    if (!rel.endsWith('/index.html')) continue;
+    const folder = file.slice(0, -'/index.html'.length);
+    renameSync(file, folder + '.html');
+    if (!readdirSync(folder).length) rmdirSync(folder);
+    moved++;
+  }
+  return moved;
+}
+
 export function postbuild(config, extraRoutes = []) {
   const site = new URL(config.siteUrl);
-  const index = out + 'index.html';
-  // URLs absolutas de Open Graph según el dominio configurado.
-  const html = readFileSync(index, 'utf8').replaceAll(
-    'https://jfredmc.github.io/napa/',
-    config.siteUrl,
-  );
-  writeFileSync(index, html);
-  if (!existsSync(out + '404.html')) copyFileSync(index, out + '404.html');
+  // URLs absolutas de Open Graph según el dominio configurado (las páginas prerenderizadas ya
+  // salen con el dominio de site-config.json; esto cubre el index.html base).
+  for (const file of htmlFiles(out)) {
+    const html = readFileSync(file, 'utf8');
+    const fixed = html.replaceAll('https://jfredmc.github.io/napa/', config.siteUrl);
+    if (fixed !== html) writeFileSync(file, fixed);
+  }
+  const moved = flattenRoutes();
+  // Rutas solo de cliente (lista, guardados, cerca, productos nuevos): GitHub Pages sirve
+  // 404.html, que es la app sin prerenderizar y el router resuelve la ruta.
+  const shell = existsSync(out + 'index.csr.html') ? out + 'index.csr.html' : out + 'index.html';
+  copyFileSync(shell, out + '404.html');
   writeFileSync(out + '.nojekyll', '');
 
   // Dominio propio: GitHub Pages lo lee del archivo CNAME.
@@ -46,6 +87,6 @@ export function postbuild(config, extraRoutes = []) {
     `User-agent: *\nAllow: /\nDisallow: ${site.pathname}lista\nDisallow: ${site.pathname}guardados\n\nSitemap: ${new URL('sitemap.xml', config.siteUrl).href}\n`,
   );
   console.log(
-    `[postbuild] sitemap con ${routes.length} rutas${config.adsense ? ', ads.txt' : ''}${site.hostname.endsWith('github.io') ? '' : ', CNAME ' + site.hostname}`,
+    `[postbuild] ${moved} páginas prerenderizadas, sitemap con ${routes.length} rutas${config.adsense ? ', ads.txt' : ''}${site.hostname.endsWith('github.io') ? '' : ', CNAME ' + site.hostname}`,
   );
 }

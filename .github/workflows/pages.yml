@@ -3,9 +3,12 @@ name: Deploy demo to GitHub Pages
 # Publica la web de Ñapa en GitHub Pages (https://jfredmc.github.io/napa/ o el dominio de NAPA_SITE_URL).
 # Afiliados, anuncios, analítica y canales salen de variables del repositorio (Settings → Variables → Actions);
 # sin ellas, todo queda apagado.
+# Cada mañana se vuelve a publicar con una foto nueva de precios reales (páginas prerenderizadas).
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 11 * * *' # 6:00 a. m. en Colombia
   workflow_dispatch:
 
 permissions:
@@ -30,6 +33,10 @@ jobs:
       - run: pnpm --filter @napa/deals-engine build
       - run: pnpm --filter @napa/connectors build
       - uses: actions/configure-pages@v5
+      - name: Foto de precios reales (si Render no responde, se usa la del repositorio)
+        run: node apps/web/scripts/snapshot.mjs
+        env:
+          NAPA_API_URL: ${{ vars.NAPA_API_URL }}
       - name: Build (base href según NAPA_SITE_URL)
         run: pnpm --filter @napa/web build:pages
         env:

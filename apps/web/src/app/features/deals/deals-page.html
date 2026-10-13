@@ -1,11 +1,20 @@
 <section class="page">
   <div class="hero">
     <div>
-      <h1>Las ofertas que <em>sí</em> son ofertas</h1>
-      <p class="muted">
-        Compara {{ stats().stores }} tiendas colombianas, detecta descuentos inflados con el
-        historial de precios y te dice dónde sale más barato, con envío incluido.
-      </p>
+      @if (routeCat(); as rc) {
+        <h1 data-testid="category-title">Ofertas de {{ categoryLabel[rc] }}</h1>
+        <p class="muted">
+          Precios de {{ categoryLabel[rc].toLowerCase() }} en {{ stats().stores }}
+          {{ stats().stores === 1 ? 'tienda' : 'tiendas' }} de Colombia, ordenados por puntaje:
+          descuento real según el historial, precio con envío y precio por unidad.
+        </p>
+      } @else {
+        <h1>Las ofertas que <em>sí</em> son ofertas</h1>
+        <p class="muted">
+          Compara {{ stats().stores }} tiendas colombianas, detecta descuentos inflados con el
+          historial de precios y te dice dónde sale más barato, con envío incluido.
+        </p>
+      }
     </div>
     <form class="search" role="search" (submit)="onSearch($event, box.value)">
       <i class="bi bi-search" aria-hidden="true"></i>
@@ -21,28 +30,30 @@
       />
       <button type="submit" class="btn">Buscar</button>
     </form>
-    <div class="chips cats" role="group" aria-label="Categorías">
-      <button
-        type="button"
+    <nav class="chips cats" aria-label="Categorías">
+      <a
         class="chip"
         [class.on]="!cat()"
-        (click)="update({ cat: null })"
+        routerLink="/"
+        [queryParams]="{ cat: null }"
+        queryParamsHandling="merge"
         data-testid="cat-all"
       >
         Todas
-      </button>
+      </a>
       @for (c of categories; track c) {
-        <button
-          type="button"
+        <a
           class="chip"
           [class.on]="cat() === c"
-          (click)="update({ cat: cat() === c ? null : c })"
+          [routerLink]="cat() === c ? '/' : ['/categoria', c]"
+          [queryParams]="{ cat: null }"
+          queryParamsHandling="merge"
           [attr.data-testid]="'cat-' + c"
         >
           <i class="bi" [class]="categoryIcon[c]" aria-hidden="true"></i>{{ categoryLabel[c] }}
-        </button>
+        </a>
       }
-    </div>
+    </nav>
   </div>
 
   @if (catalog.error(); as err) {
@@ -68,7 +79,13 @@
       </div>
       <a class="stat link" routerLink="/fuentes">
         <b><i class="bi bi-cpu" aria-hidden="true"></i></b>
-        <span>{{ catalog.mode() === 'demo' ? 'Precios simulados' : 'Fuentes mixtas' }}</span>
+        <span>{{
+          catalog.mode() === 'demo'
+            ? 'Precios simulados'
+            : catalog.mode() === 'snapshot'
+              ? 'Precios reales guardados'
+              : 'Fuentes mixtas'
+        }}</span>
         <small class="muted">Ver qué es real y qué no</small>
       </a>
     </div>
@@ -93,7 +110,7 @@
           <h2>
             <i class="bi" [class]="categoryIcon[c]" aria-hidden="true"></i> {{ categoryLabel[c] }}
           </h2>
-          <button type="button" class="link small" (click)="update({ cat: c })">Ver todo</button>
+          <a class="link small" [routerLink]="['/categoria', c]">Ver todo</a>
         </div>
         <div class="grid offers">
           @for (item of list; track item.offer.id) {

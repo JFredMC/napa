@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page, type Route } from './test-base';
 
 /**
  * Modo API con el servidor simulado por Playwright: respuestas reales del backend capturadas
@@ -56,7 +56,9 @@ test('servidor despierto: modo API por defecto, precios reales marcadas en vivo'
   await expect(page.getByTestId('source-temu')).toContainText('Simulada');
 });
 
-test('servidor dormido: avisa "despertando" con la demo y luego pasa a API', async ({ page }) => {
+test('servidor dormido: avisa "despertando" con los precios reales guardados y luego pasa a API', async ({
+  page,
+}) => {
   let release!: () => void;
   const woke = new Promise<void>((r) => (release = r));
   await mockApi(page, async (route) => {
@@ -66,26 +68,30 @@ test('servidor dormido: avisa "despertando" con la demo y luego pasa a API', asy
   await page.goto('');
   const waking = page.getByTestId('waking-banner');
   await expect(waking).toContainText('Despertando el servidor');
-  await expect(waking).toContainText('simulados');
-  // Mientras despierta se ve la demo, marcada como simulada.
-  await expect(page.getByTestId('top').getByTestId('tag-sim').first()).toBeVisible();
+  await expect(waking).toContainText('precios reales guardados');
+  // Mientras despierta se ve la foto de precios reales (en vivo), no la demo.
+  await expect(page.getByTestId('top').getByTestId('tag-live').first()).toBeVisible();
+  await expect(page.getByTestId('top').getByTestId('tag-sim')).toHaveCount(0);
   release();
   await expect(page.getByTestId('api-banner')).toBeVisible({ timeout: 15_000 });
   await expect(waking).toHaveCount(0);
   await expect(page.getByTestId('tag-live').first()).toBeVisible();
 });
 
-test('servidor caído: se queda en demo, lo dice y ofrece reintentar', async ({ page }) => {
+test('servidor caído: se queda con los precios guardados, lo dice y ofrece reintentar', async ({
+  page,
+}) => {
   await page.clock.install();
   await mockApi(page, (route) => route.abort('connectionrefused'));
   await page.goto('');
   await page.clock.fastForward(2_000);
   await expect(page.getByTestId('waking-banner')).toBeVisible();
   await page.clock.fastForward(80_000);
-  await expect(page.getByTestId('demo-banner')).toContainText('simulados');
+  const banner = page.getByTestId('snapshot-banner');
+  await expect(banner).toContainText('Precios reales guardados');
   await expect(page.getByTestId('server-down')).toContainText('no respondió');
   await expect(page.getByTestId('retry-api')).toBeVisible();
-  await expect(page.getByTestId('tag-live')).toHaveCount(0);
+  await expect(page.getByTestId('top').getByTestId('tag-sim')).toHaveCount(0);
 });
 
 test('el selector Demo/API recuerda la elección', async ({ page }) => {
@@ -99,4 +105,19 @@ test('el selector Demo/API recuerda la elección', async ({ page }) => {
   await expect(page.getByTestId('demo-banner')).toBeVisible();
   await page.getByTestId('mode-api').click();
   await expect(page.getByTestId('api-banner')).toBeVisible();
+});
+
+test('enlace compartido a un producto real: abre aunque el servidor siga dormido', async ({
+  page,
+  request,
+}) => {
+  await mockApi(page, () => new Promise<void>(() => undefined));
+  const sitemap = await (await request.get('sitemap.xml')).text();
+  const product = /<loc>[^<]*\/(producto\/[^<]+)<\/loc>/.exec(sitemap)![1]!;
+  await page.goto(product);
+  await expect(page.getByTestId('product-title')).toBeVisible();
+  const out = page.getByTestId('out-main').locator('a');
+  await expect(out).toHaveAttribute('rel', 'sponsored nofollow noopener');
+  await expect(out).toHaveAttribute('href', /^https:\/\/www\.(jumbocolombia|olimpica)\.com\//);
+  await expect(page.getByTestId('sim-note')).toHaveCount(0);
 });

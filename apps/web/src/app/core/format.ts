@@ -53,3 +53,17 @@ export const CATEGORY_ICON: Record<CategoryId, string> = {
   moda: 'bi-bag-heart',
   belleza: 'bi-brush',
 };
+
+/** "8 oct, 11:22 a. m." en hora de Colombia (sea cual sea la zona del navegador). */
+export function bogotaDateTime(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('es-CO', {
+    timeZone: 'America/Bogota',
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
