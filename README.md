@@ -159,6 +159,7 @@ Variables del repositorio (Settings → Secrets and variables → Actions → Va
 | `NAPA_ADSENSE_SLOT_FEED`, `NAPA_ADSENSE_SLOT_PRODUCT` | `1234567890`                               | IDs de los bloques de anuncios                  |
 | `NAPA_GOATCOUNTER` o `NAPA_CF_BEACON_TOKEN`           | `napa`                                     | Analítica sin cookies                           |
 | `NAPA_CONTACT_EMAIL`, `NAPA_LEGAL_OWNER`              | `datos@napa.co`                            | Responsable y contacto en la política de datos  |
+| `NAPA_TELEGRAM_BOT_URL`                               | `https://t.me/NapaOfertasBot`              | Botón de alertas (deep link al bot)             |
 | `NAPA_TELEGRAM_URL`, `NAPA_WHATSAPP_URL`              | `https://t.me/napaofertas`                 | Enlaces a los canales en el pie                 |
 
 En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_<TIENDA>` para los enlaces del canal.
@@ -168,6 +169,14 @@ En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_
 - `GET /api/channel/post?format=whatsapp|telegram`: el top del día (solo precios en vivo, sin descuentos inflados, uno por producto) con enlaces de afiliado si están configurados, listo para copiar y pegar. WhatsApp Channels no tiene API para publicar: se pega a mano desde el teléfono.
 - `POST /api/channel/publish` con `Authorization: Bearer <ADMIN_TOKEN>` publica en Telegram (Bot API `sendMessage`). Apagado sin `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHANNEL_ID` en Render.
 - `.github/workflows/channel.yml` lo llama cada día a las 7:00 a. m. (Colombia): primero despierta Render y luego publica. Necesita los secretos del repositorio `NAPA_API_URL` y `ADMIN_TOKEN`.
+
+## Alertas de precio (@NapaOfertasBot)
+
+- Comandos: `/start`, `/alerta <búsqueda> [máx <precio>]`, `/mis_alertas`, `/borrar <n>|todo`, `/ayuda`. Máx. 10 alertas por persona; solo chats privados.
+- **Webhook** (no polling): Render gratis se duerme y un mensaje al bot lo despierta. Al arrancar con `RENDER_EXTERNAL_URL` (Render la pone sola) la API registra `POST /api/telegram/webhook` con una cabecera secreta derivada del token, y los comandos del bot.
+- Deep link desde la web: `https://t.me/NapaOfertasBot?start=q_<base64url de la búsqueda>` (botón “Recibir alertas en Telegram”, configurable con `NAPA_TELEGRAM_BOT_URL`).
+- `.github/workflows/alerts.yml` llama `POST /api/alerts/check` (con `ADMIN_TOKEN`) cada 3 horas: una búsqueda por texto en Jumbo y Olímpica (con la caché y el ritmo de siempre) y aviso si el mínimo baja ≥ 2 % o cruza el precio objetivo.
+- Persistencia: Render gratis no tiene disco. Con `ALERTS_GIST_ID` + `ALERTS_GITHUB_TOKEN` (token clásico solo con permiso `gist`) el estado se guarda **cifrado** (AES-256-GCM) en un gist secreto; sin ellos vive en memoria y se pierde al reiniciar. `GET /api/health` dice `alerts: "gist" | "memory" | "off"`.
 
 ## SEO: páginas prerenderizadas (SSG)
 

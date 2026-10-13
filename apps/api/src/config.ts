@@ -21,6 +21,10 @@ export interface AppConfig {
   /** URL pública del sitio (para enlaces en el canal). */
   siteUrl: string;
   telegram: { botToken: string; channelId: string } | null;
+  /** Persistencia de alertas en un gist secreto (cifrado). Sin esto, quedan en memoria. */
+  alerts: { gistId: string; githubToken: string } | null;
+  /** URL pública de la API (Render la da en RENDER_EXTERNAL_URL) para el webhook. */
+  publicApiUrl: string | null;
   /** Ofertas por publicación del canal. */
   channelTopN: number;
 }
@@ -58,6 +62,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       env['TELEGRAM_BOT_TOKEN'] && env['TELEGRAM_CHANNEL_ID']
         ? { botToken: env['TELEGRAM_BOT_TOKEN'], channelId: env['TELEGRAM_CHANNEL_ID'] }
         : null,
+    alerts:
+      env['ALERTS_GIST_ID'] && env['ALERTS_GITHUB_TOKEN']
+        ? { gistId: env['ALERTS_GIST_ID'], githubToken: env['ALERTS_GITHUB_TOKEN'] }
+        : null,
+    publicApiUrl: env['TELEGRAM_WEBHOOK_BASE'] ?? env['RENDER_EXTERNAL_URL'] ?? null,
     channelTopN: Math.min(10, num('CHANNEL_TOP_N', 5, 1)),
   };
 }

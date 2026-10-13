@@ -1,0 +1,40 @@
+name: Revisar alertas de precio
+
+# Cada 3 horas despierta el backend de Render (plan gratuito, se duerme) y le pide revisar las
+# alertas de @NapaOfertasBot; el backend avisa por Telegram a quien tenga una bajada de precio.
+# Usa los mismos secretos que el canal: NAPA_API_URL y ADMIN_TOKEN.
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alerts
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API: ${{ secrets.NAPA_API_URL }}
+      TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - name: Sin configurar
+        if: ${{ env.API == '' || env.TOKEN == '' }}
+        run: echo "Faltan los secretos NAPA_API_URL / ADMIN_TOKEN; no se revisa nada."
+      - name: Despertar el servidor
+        if: ${{ env.API != '' && env.TOKEN != '' }}
+        run: |
+          for i in $(seq 1 20); do
+            curl -fsS --max-time 30 "$API/api/health" && exit 0
+            sleep 10
+          done
+          exit 1
+      - name: Revisar alertas
+        if: ${{ env.API != '' && env.TOKEN != '' }}
+        run: |
+          curl -fsS --max-time 300 -X POST -H "Authorization: Bearer $TOKEN" "$API/api/alerts/check"
