@@ -1,6 +1,6 @@
 name: Deploy demo to GitHub Pages
 
-# Publica la web de Ñapa en GitHub Pages (https://jfredmc.github.io/napa/ o el dominio de NAPA_SITE_URL).
+# Publica la web de Ñapa en GitHub Pages (https://napaofertas.com/ por defecto, o el dominio de NAPA_SITE_URL).
 # Afiliados, anuncios, analítica y canales salen de variables del repositorio (Settings → Variables → Actions);
 # sin ellas, todo queda apagado.
 # Cada mañana se vuelve a publicar con una foto nueva de precios reales (páginas prerenderizadas).

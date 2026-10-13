@@ -1,11 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * E2E tests against the GitHub Pages build (`pnpm build:pages`), served under /napa/.
- * E2E_BASE_URL=https://jfredmc.github.io/napa/ runs them against the live site.
+ * E2E tests against the GitHub Pages build (`pnpm build:pages`), served at the root (custom domain napaofertas.com).
+ * E2E_BASE_URL=https://napaofertas.com/ runs them against the live site.
  */
 const liveUrl = process.env['E2E_BASE_URL'];
-const baseURL = liveUrl ?? 'http://localhost:4310/napa/';
+const baseURL = liveUrl ?? 'http://localhost:4310/';
 const isCI = !!process.env['CI'];
 
 export default defineConfig({

@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://jfredmc.github.io/napa/"><b>Ver la demo</b></a> ·
+  <a href="https://napaofertas.com/" target="_blank" rel="noopener"><b>Ver la app</b></a> ·
   <a href="#fuentes-qué-es-real-y-qué-es-simulado">Fuentes</a> ·
   <a href="#cómo-decide">Cómo decide</a> ·
   <a href="#servidor-en-render">Servidor</a> ·
@@ -196,7 +196,7 @@ napa/
     └── features/           ofertas · producto · lista · guardados · cerca · fuentes
 ```
 
-- Web en GitHub Pages (`base href` `/napa/` y `404.html` para las rutas) con modo API (servidor en Render) y demo de respaldo. MapLibre se carga solo en “Cerca”.
+- Web en GitHub Pages (dominio propio napaofertas.com, `base href` `/`, `CNAME` y `404.html` para las rutas) con modo API (servidor en Render) y demo de respaldo. MapLibre se carga solo en “Cerca”.
 - La ubicación solo se pide al tocar el botón, se usa una vez para consultar Overpass y no se guarda.
 - Favoritos, alertas y lista quedan en `localStorage`.
 
@@ -222,7 +222,7 @@ pnpm typecheck
 pnpm --filter @napa/web build:pages
 pnpm --filter @napa/web e2e
 # …o contra el sitio en vivo
-E2E_BASE_URL=https://jfredmc.github.io/napa/ pnpm --filter @napa/web e2e
+E2E_BASE_URL=https://napaofertas.com/ pnpm --filter @napa/web e2e
 ```
 
 CI corre formato, lint, typecheck, pruebas, build, la suite E2E de la API y la de la web en cada PR. Después de cada despliegue, la suite web se repite contra el sitio publicado. Las pruebas no tocan tiendas reales: la API usa un `fetch` falso y la web responde Overpass con sedes reales de OpenStreetMap y el servidor con respuestas reales capturadas, guardadas en `e2e/fixtures` (modo API, “despertando”, servidor caído y demo). Con la variable de repositorio `E2E_REAL_API=1`, la corrida en vivo además prueba el servidor real en Render.
