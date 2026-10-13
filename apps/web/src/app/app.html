@@ -200,6 +200,13 @@
         }
       </p>
     }
+    @if (site.channels.telegramBot; as bot) {
+      <p class="small channels" data-testid="tg-bot">
+        <a [href]="bot" target="_blank" rel="noopener"
+          ><i class="bi bi-bell" aria-hidden="true"></i> Recibir alertas de precio en Telegram</a
+        >
+      </p>
+    }
     <nav class="legal-links small" aria-label="Legal" data-testid="legal-links">
       <a routerLink="/privacidad">Privacidad</a>
       <a routerLink="/terminos">Términos</a>

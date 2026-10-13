@@ -59,6 +59,7 @@ jobs:
           NAPA_CONTACT_EMAIL: ${{ vars.NAPA_CONTACT_EMAIL }}
           NAPA_LEGAL_OWNER: ${{ vars.NAPA_LEGAL_OWNER }}
           NAPA_TELEGRAM_URL: ${{ vars.NAPA_TELEGRAM_URL }}
+          NAPA_TELEGRAM_BOT_URL: ${{ vars.NAPA_TELEGRAM_BOT_URL }}
           NAPA_WHATSAPP_URL: ${{ vars.NAPA_WHATSAPP_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:

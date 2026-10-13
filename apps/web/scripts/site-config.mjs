@@ -88,6 +88,11 @@ export function buildSiteConfig() {
         /^https:\/\/t\.me\/[\w+]+$/,
         'formato https://t.me/canal',
       ),
+      telegramBot: pick(
+        'NAPA_TELEGRAM_BOT_URL',
+        /^https:\/\/t\.me\/\w+$/,
+        'formato https://t.me/MiBot',
+      ),
       whatsapp: pick(
         'NAPA_WHATSAPP_URL',
         /^https:\/\/(www\.)?whatsapp\.com\/channel\/\w+$/,
