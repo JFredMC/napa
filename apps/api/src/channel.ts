@@ -36,7 +36,29 @@ export const CHANNEL_TERMS = [
   'atun',
   'detergente',
   'panales',
+  'azucar',
+  'pasta',
+  'frijol',
+  'jabon',
+  'queso',
 ];
+const norm = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+/** Palabras que delatan que no es mercado aunque la tienda lo ponga en una categoría de mercado. */
+const NOT_GROCERY =
+  /\b(extractor|organizador|camion|juguete|cuna|olla|hervidor|cafetera|sofa|termo|vaso|toalla|cobija|silla|lampara|sarten|licuadora)\b/;
+
+/** El producto ES el término: el título empieza por él o lo nombra al inicio ("Lomo de atún"). */
+export function matchesTerm(title: string, term: string): boolean {
+  const t = norm(title);
+  if (NOT_GROCERY.test(t)) return false;
+  const words = t.split(/[^a-z0-9]+/).filter(Boolean);
+  const stem = norm(term);
+  return words.slice(0, 4).some((w) => w === stem || w === `${stem}s` || w === `${stem}es`);
+}
 const LIVE_STORES = ['jumbo', 'olimpica'];
 /** Solo mercado: "huevos" también trae hervidores y "café" sofás color café. */
 const GROCERY = new Set([
@@ -56,6 +78,8 @@ export interface ChannelDeal {
   realPct: number | null;
   href: string;
   affiliate: boolean;
+  /** Búsqueda en napaofertas.com para comparar el producto entre tiendas. */
+  napaUrl: string;
 }
 
 export type PostFormat = 'whatsapp' | 'telegram';
@@ -78,7 +102,11 @@ export function formatPost(
     const name = tg ? esc(d.title) : d.title;
     lines.push(`${i + 1}. ${name}`);
     lines.push(`   ${bold(cop(d.price))}${off} en ${tg ? esc(d.store) : d.store}`);
-    lines.push(`   ${tg ? `<a href="${esc(d.href)}">Ver en la tienda</a>` : d.href}`);
+    lines.push(
+      tg
+        ? `   <a href="${esc(d.href)}">Ver en la tienda</a> · <a href="${esc(d.napaUrl)}">Comparar en Ñapa</a>`
+        : `   ${d.href}\n   Comparar: ${d.napaUrl}`,
+    );
     lines.push('');
   });
   if (deals.some((d) => d.affiliate))
@@ -87,6 +115,11 @@ export function formatPost(
     );
   lines.push(`Precios del momento; confírmalos en la tienda. Más en ${siteUrl}`);
   return lines.join('\n');
+}
+
+/** Las 3 primeras palabras del título: búsqueda corta que sí encuentra el producto. */
+export function searchTerms(title: string): string {
+  return title.split(/\s+/).slice(0, 3).join(' ');
 }
 
 @Injectable()
@@ -101,9 +134,14 @@ export class ChannelService {
   /** Top N: solo precios en vivo, sin descuentos inflados, uno por producto, por puntaje. */
   async topDeals(n = this.config.channelTopN): Promise<ChannelDeal[]> {
     const offers = new Map<string, Offer>();
+    const termOf = new Map<string, string>();
     for (const q of CHANNEL_TERMS) {
       const r = await this.search.search({ q, limit: 24 }, LIVE_STORES);
-      for (const o of r.offers) if (o.source === 'live' && o.url) offers.set(o.id, o);
+      for (const o of r.offers)
+        if (o.source === 'live' && o.url && matchesTerm(o.title, q)) {
+          offers.set(o.id, o);
+          termOf.set(o.id, q);
+        }
     }
     const scored = scoreOffers([...offers.values()], STORES);
     const honest = filterOffers(scored, { onlyHonest: true }).filter((s) =>
@@ -112,7 +150,16 @@ export class ChannelService {
     // Primero las rebajas reales (según historial), luego el resto por puntaje.
     const ranked = sortOffers(bestPerProduct(honest), 'score');
     const discounted = ranked.filter((s) => (s.analysis.realPct ?? 0) >= 5);
-    return [...discounted, ...ranked.filter((s) => !discounted.includes(s))]
+    // Variedad: una oferta por término (arroz, leche…) y luego se completa si faltan.
+    const ordered = [...discounted, ...ranked.filter((s) => !discounted.includes(s))];
+    const seen = new Set<string>();
+    const varied = ordered.filter((s) => {
+      const t = termOf.get(s.offer.id) ?? s.offer.id;
+      if (seen.has(t)) return false;
+      seen.add(t);
+      return true;
+    });
+    return [...varied, ...ordered.filter((s) => !varied.includes(s))]
       .slice(0, n)
       .map((s: ScoredOffer) => {
         const link = withAffiliate(s.offer.url ?? '', this.config.affiliates[s.offer.storeId]);
@@ -124,6 +171,7 @@ export class ChannelService {
           realPct: s.analysis.realPct ?? null,
           href: link.href,
           affiliate: link.affiliate,
+          napaUrl: `${this.config.siteUrl}?q=${encodeURIComponent(searchTerms(s.offer.title))}`,
         };
       });
   }
