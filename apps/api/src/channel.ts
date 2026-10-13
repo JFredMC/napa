@@ -117,6 +117,16 @@ export function formatPost(
   return lines.join('\n');
 }
 
+/**
+ * Precio por kilo o litro imposible para mercado (> $150.000): suele ser un producto que la
+ * tienda vende al peso con el precio por kilo mal cargado ("Queso x200g" a $97.000).
+ */
+export function absurdUnitPrice(o: Pick<Offer, 'price' | 'size'>): boolean {
+  const size = o.size;
+  if (!size || !size.amount || !['g', 'ml'].includes(size.unit)) return false;
+  return (o.price / size.amount) * 1000 > 150_000;
+}
+
 /** Las 3 primeras palabras del título: búsqueda corta que sí encuentra el producto. */
 export function searchTerms(title: string): string {
   return title.split(/\s+/).slice(0, 3).join(' ');
@@ -138,7 +148,7 @@ export class ChannelService {
     for (const q of CHANNEL_TERMS) {
       const r = await this.search.search({ q, limit: 24 }, LIVE_STORES);
       for (const o of r.offers)
-        if (o.source === 'live' && o.url && matchesTerm(o.title, q)) {
+        if (o.source === 'live' && o.url && matchesTerm(o.title, q) && !absurdUnitPrice(o)) {
           offers.set(o.id, o);
           termOf.set(o.id, q);
         }
