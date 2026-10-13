@@ -35,7 +35,7 @@ describe('Canal de ofertas (e2e)', () => {
     expect(res.body.format).toBe('whatsapp');
     expect(res.body.deals.length).toBeGreaterThan(0);
     expect(res.body.text).toContain('Ñapa · ofertas reales de hoy (7 de octubre)');
-    expect(res.body.text).toContain('jfredmc.github.io/napa/');
+    expect(res.body.text).toContain('napaofertas.com/');
     const jumbo = res.body.deals.find((d: { store: string }) => d.store === 'Jumbo');
     if (jumbo) {
       expect(jumbo.href).toContain('utm_source=napa');

@@ -53,7 +53,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     mercadoLibre: ml,
     adminToken: env['ADMIN_TOKEN'] && env['ADMIN_TOKEN'].length >= 24 ? env['ADMIN_TOKEN'] : null,
     affiliates: affiliateRulesFromEnv(env, STORE_IDS),
-    siteUrl: (env['SITE_URL'] ?? 'https://jfredmc.github.io/napa/').replace(/\/?$/, '/'),
+    siteUrl: (env['SITE_URL'] ?? 'https://napaofertas.com/').replace(/\/?$/, '/'),
     telegram:
       env['TELEGRAM_BOT_TOKEN'] && env['TELEGRAM_CHANNEL_ID']
         ? { botToken: env['TELEGRAM_BOT_TOKEN'], channelId: env['TELEGRAM_CHANNEL_ID'] }

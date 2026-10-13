@@ -49,7 +49,7 @@ export function postbuild(config, extraRoutes = []) {
   // salen con el dominio de site-config.json; esto cubre el index.html base).
   for (const file of htmlFiles(out)) {
     const html = readFileSync(file, 'utf8');
-    const fixed = html.replaceAll('https://jfredmc.github.io/napa/', config.siteUrl);
+    const fixed = html.replaceAll('https://napaofertas.com/', config.siteUrl);
     if (fixed !== html) writeFileSync(file, fixed);
   }
   const moved = flattenRoutes();

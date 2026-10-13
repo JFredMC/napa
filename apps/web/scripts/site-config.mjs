@@ -34,7 +34,7 @@ function pick(key, re, hint) {
 export function buildSiteConfig() {
   let siteUrl =
     pick('NAPA_SITE_URL', /^https:\/\/[^\s]+$/, 'debe empezar por https://') ??
-    'https://jfredmc.github.io/napa/';
+    'https://napaofertas.com/';
   if (!siteUrl.endsWith('/')) siteUrl += '/';
 
   const affiliates = {};

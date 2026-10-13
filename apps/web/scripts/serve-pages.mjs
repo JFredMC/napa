@@ -1,4 +1,4 @@
-// Serves dist/pages like GitHub Pages does: under /napa/, static files
+// Serves dist/pages like GitHub Pages does: under the siteUrl base path, static files
 // only (/x also serves x.html), and 404.html (with status 404) for anything else.
 // Used by the demo Playwright suite: `pnpm serve:pages` after `pnpm build:pages`.
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
