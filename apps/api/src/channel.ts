@@ -38,6 +38,15 @@ export const CHANNEL_TERMS = [
   'panales',
 ];
 const LIVE_STORES = ['jumbo', 'olimpica'];
+/** Solo mercado: "huevos" también trae hervidores y "café" sofás color café. */
+const GROCERY = new Set([
+  'despensa',
+  'lacteos',
+  'bebidas',
+  'aseo-hogar',
+  'cuidado-personal',
+  'bebe',
+]);
 
 export interface ChannelDeal {
   title: string;
@@ -97,8 +106,13 @@ export class ChannelService {
       for (const o of r.offers) if (o.source === 'live' && o.url) offers.set(o.id, o);
     }
     const scored = scoreOffers([...offers.values()], STORES);
-    const honest = filterOffers(scored, { onlyHonest: true });
-    return sortOffers(bestPerProduct(honest), 'score')
+    const honest = filterOffers(scored, { onlyHonest: true }).filter((s) =>
+      GROCERY.has(s.offer.category),
+    );
+    // Primero las rebajas reales (según historial), luego el resto por puntaje.
+    const ranked = sortOffers(bestPerProduct(honest), 'score');
+    const discounted = ranked.filter((s) => (s.analysis.realPct ?? 0) >= 5);
+    return [...discounted, ...ranked.filter((s) => !discounted.includes(s))]
       .slice(0, n)
       .map((s: ScoredOffer) => {
         const link = withAffiliate(s.offer.url ?? '', this.config.affiliates[s.offer.storeId]);
