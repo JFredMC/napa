@@ -1,11 +1,15 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { CATEGORY_IDS, STORE_IDS } from '@napa/connectors';
 import type { CategoryId } from '@napa/deals-engine';
+import { AlertsService } from './alerts/alerts';
 import { SearchService, type SearchResult, type SourceStatus } from './search.service';
 
 @Controller()
 export class SearchController {
-  constructor(private readonly search: SearchService) {}
+  constructor(
+    private readonly search: SearchService,
+    private readonly alerts: AlertsService,
+  ) {}
 
   /** GET /api/search?q=arroz&category=despensa&stores=jumbo,olimpica&limit=24 */
   @Get('search')
@@ -36,7 +40,11 @@ export class SearchController {
   }
 
   @Get('health')
-  health(): { status: 'ok' } {
-    return { status: 'ok' };
+  health(): { status: 'ok'; telegram: boolean; alerts: 'gist' | 'memory' | 'off' } {
+    return {
+      status: 'ok',
+      telegram: this.alerts.enabled,
+      alerts: this.alerts.enabled ? this.alerts.store.kind : 'off',
+    };
   }
 }

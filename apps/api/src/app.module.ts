@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import type { FetchLike } from '@napa/connectors';
 import { APP_CONFIG, CLOCK, FETCH, loadConfig, type AppConfig } from './config';
+import { ALERT_STORE, AlertsController, AlertsService, alertStoreFactory } from './alerts/alerts';
 import { ChannelController, ChannelService } from './channel';
 import { ClicksController, ClicksService } from './clicks';
 import { RobotsService } from './robots.service';
@@ -22,7 +23,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: config.clientRpm }])],
-      controllers: [SearchController, ClicksController, ChannelController],
+      controllers: [SearchController, ClicksController, ChannelController, AlertsController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         {
@@ -35,6 +36,12 @@ export class AppModule {
         SearchService,
         ClicksService,
         ChannelService,
+        {
+          provide: ALERT_STORE,
+          useFactory: (c: AppConfig, f: FetchLike) => alertStoreFactory(c, f),
+          inject: [APP_CONFIG, FETCH],
+        },
+        AlertsService,
       ],
     };
   }

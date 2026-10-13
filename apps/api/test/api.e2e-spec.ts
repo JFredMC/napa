@@ -27,7 +27,9 @@ describe('API (e2e)', () => {
   afterAll(() => app.close());
 
   it('GET /api/health', () =>
-    request(app.getHttpServer()).get('/api/health').expect(200, { status: 'ok' }));
+    request(app.getHttpServer())
+      .get('/api/health')
+      .expect(200, { status: 'ok', telegram: false, alerts: 'off' }));
 
   it('GET /api/search mezcla fuentes reales y simuladas, cada oferta marcada', async () => {
     const res = await request(app.getHttpServer())
