@@ -22,6 +22,7 @@ import { CatalogStore } from '../../core/catalog.store';
 import { cop, pct, shortDate, unitLabel } from '../../core/format';
 import { ListsStore } from '../../core/lists.store';
 import { Seo } from '../../core/seo';
+import { SITE_CONFIG, telegramAlertUrl } from '../../core/site-config';
 import { PriceChart } from '../../shared/price-chart';
 import { StoreLink } from '../../shared/store-link';
 import { AdSlot } from '../../shared/ad-slot';
@@ -54,6 +55,7 @@ export class ProductPage {
   private readonly toast = inject(Toast);
   private readonly router = inject(Router);
   private readonly seo = inject(Seo);
+  private readonly site = inject(SITE_CONFIG);
   protected readonly stores = STORES;
   protected readonly cop = cop;
   protected readonly pct = pct;
@@ -79,6 +81,13 @@ export class ProductPage {
     return this.rows().find((r) => r.item.offer.storeId === id)?.item ?? this.cheapest();
   });
   protected readonly product = computed(() => this.cheapest()?.offer ?? null);
+  /** Deep link a @NapaOfertasBot que crea la alerta con las primeras palabras del producto. */
+  protected readonly alertUrl = computed(() => {
+    const bot = this.site.channels.telegramBot;
+    const p = this.product();
+    if (!bot || !p) return null;
+    return telegramAlertUrl(bot, p.title.split(/\s+/).slice(0, 4).join(' '));
+  });
   protected readonly category = computed(() =>
     this.product() ? CATEGORY_LABEL[this.product()!.category] : '',
   );

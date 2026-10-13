@@ -57,6 +57,18 @@
         <button type="button" class="btn" (click)="addToList()" data-testid="add-list">
           <i class="bi bi-cart-plus" aria-hidden="true"></i> A la lista
         </button>
+        @if (alertUrl(); as u) {
+          <a
+            class="btn ghost"
+            [href]="u"
+            target="_blank"
+            rel="noopener"
+            data-testid="tg-alert"
+            aria-label="Recibir alertas de precio de este producto en Telegram (abre en otra pestaña)"
+          >
+            <i class="bi bi-telegram" aria-hidden="true"></i> Recibir alertas en Telegram
+          </a>
+        }
       </div>
     </header>
 

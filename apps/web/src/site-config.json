@@ -11,6 +11,7 @@
   "legalOwner": null,
   "channels": {
     "telegram": null,
+    "telegramBot": null,
     "whatsapp": null
   }
 }
