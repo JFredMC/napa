@@ -1,0 +1,36 @@
+name: Publicar ofertas en Telegram
+
+# Una vez al día despierta el backend de Render (plan gratuito, se duerme) y le pide publicar
+# el top de ofertas reales en el canal de Telegram. Apagado hasta que existan los secretos
+# NAPA_API_URL (p. ej. https://napa-api.onrender.com) y ADMIN_TOKEN (el mismo de Render).
+on:
+  schedule:
+    - cron: '0 12 * * *' # 7:00 a. m. en Colombia
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API: ${{ secrets.NAPA_API_URL }}
+      TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - name: Sin configurar
+        if: ${{ env.API == '' || env.TOKEN == '' }}
+        run: echo "Faltan los secretos NAPA_API_URL / ADMIN_TOKEN; no se publica nada."
+      - name: Despertar el servidor
+        if: ${{ env.API != '' && env.TOKEN != '' }}
+        run: |
+          for i in $(seq 1 20); do
+            curl -fsS --max-time 30 "$API/api/health" && exit 0
+            sleep 10
+          done
+          exit 1
+      - name: Publicar
+        if: ${{ env.API != '' && env.TOKEN != '' }}
+        run: |
+          curl -fsS --max-time 180 -X POST -H "Authorization: Bearer $TOKEN" "$API/api/channel/publish"

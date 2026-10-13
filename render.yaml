@@ -53,6 +53,13 @@ services:
       # Protege /api/clicks y /api/channel/* (mín. 24 caracteres). Render lo genera.
       - key: ADMIN_TOKEN
         generateValue: true
+      # Canal de Telegram (opcional): token de @BotFather y @canal o -100…; el bot debe ser admin.
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: CHANNEL_TOP_N
+        value: '5'
       - key: ML_CLIENT_ID
         sync: false
       - key: ML_CLIENT_SECRET
