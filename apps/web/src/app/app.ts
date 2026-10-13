@@ -1,8 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  afterNextRender,
+  computed,
+  inject,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { checkWatches } from '@napa/deals-engine';
 import { CatalogStore } from './core/catalog.store';
 import { ListsStore } from './core/lists.store';
+import { bogotaDateTime } from './core/format';
 import { API_URL, switchMode } from './core/mode';
 import { ThemeStore } from './core/theme.store';
 import { ConsentStore } from './core/consent.store';
@@ -25,11 +32,14 @@ export class App {
   protected readonly apiUrl = inject(API_URL);
   protected readonly year = new Date().getFullYear();
   protected readonly switchMode = switchMode;
+  protected readonly bogotaDateTime = bogotaDateTime;
   protected readonly consent = inject(ConsentStore);
   protected readonly site = inject(SITE_CONFIG);
 
   constructor() {
     inject(Trackers).start();
+    // La app del navegador ya reemplazó al HTML prerenderizado (lo usan las pruebas e2e).
+    afterNextRender(() => document.documentElement.setAttribute('data-app', 'ready'));
   }
 
   /** Tras una caída, vuelve a intentar el modo API (recarga para empezar limpio). */

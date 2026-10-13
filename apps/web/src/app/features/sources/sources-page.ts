@@ -10,6 +10,7 @@ import {
 import { STORES, type StoreMeta } from '@napa/connectors';
 import { INFLATION_TOLERANCE, MIN_HISTORY_DAYS, SUSPICIOUS_PCT } from '@napa/deals-engine';
 import { CatalogStore, type SourceStatus } from '../../core/catalog.store';
+import { Seo } from '../../core/seo';
 import { API_URL } from '../../core/mode';
 import { StoreChip } from '../../shared/ui';
 
@@ -27,6 +28,7 @@ const ADAPTER: Record<StoreMeta['liveSource'], string> = {
 })
 export class SourcesPage {
   protected readonly catalog = inject(CatalogStore);
+  private readonly seo = inject(Seo);
   protected readonly apiUrl = inject(API_URL);
   protected readonly adapter = ADAPTER;
   protected readonly minDays = MIN_HISTORY_DAYS;
@@ -58,6 +60,12 @@ export class SourcesPage {
   });
 
   constructor() {
+    this.seo.set({
+      title: 'Fuentes: qué precios son reales · Ñapa',
+      description:
+        'De dónde salen los precios de Ñapa: qué tiendas se consultan en vivo (catálogos públicos y APIs oficiales), cuáles están bloqueadas y cuáles se simulan, y cómo se calcula el puntaje.',
+      path: 'fuentes',
+    });
     // Con el backend listo, el estado real de cada fuente lo da /api/sources.
     effect(() => {
       if (this.catalog.connection() !== 'ready' || !this.apiUrl) return;

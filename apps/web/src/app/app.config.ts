@@ -14,7 +14,8 @@ const apiUrl = DEFAULT_SITE_CONFIG.apiUrl ?? environment.apiUrl;
 const preference = resolvePreference(
   apiUrl,
   typeof localStorage === 'undefined' ? undefined : localStorage,
-  location.search,
+  // Al prerenderizar (Node) no hay `location`: la preferencia del cliente se resuelve en el navegador.
+  typeof location === 'undefined' ? '' : location.search,
 );
 
 export const appConfig: ApplicationConfig = {

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CATEGORY_LABEL, STORES, STORE_IDS } from '@napa/connectors';
 import { bestPerProduct, filterOffers, optimizeBasket, sortOffers } from '@napa/deals-engine';
 import { CatalogStore } from '../../core/catalog.store';
+import { Seo } from '../../core/seo';
 import { cop } from '../../core/format';
 import { ListsStore } from '../../core/lists.store';
 import { LocationStore } from '../../core/location.store';
@@ -32,6 +33,7 @@ const SAMPLE = [
 })
 export class ListPage {
   protected readonly catalog = inject(CatalogStore);
+  private readonly seo = inject(Seo);
   protected readonly lists = inject(ListsStore);
   protected readonly location = inject(LocationStore);
   private readonly toast = inject(Toast);
@@ -108,5 +110,14 @@ export class ListPage {
 
   protected toggleStore(id: string): void {
     this.excluded.update((ex) => (ex.includes(id) ? ex.filter((x) => x !== id) : [...ex, id]));
+  }
+
+  constructor() {
+    this.seo.set({
+      title: 'Lista de compras · Ñapa',
+      description: 'Arma tu lista de compras y mira en qué tienda sale más barata.',
+      path: 'lista',
+      noindex: true,
+    });
   }
 }

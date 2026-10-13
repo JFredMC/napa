@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { STORES } from '@napa/connectors';
 import { CatalogStore } from '../../core/catalog.store';
+import { Seo } from '../../core/seo';
 import { km } from '../../core/format';
 import { LocationStore } from '../../core/location.store';
 import { StoreChip } from '../../shared/ui';
@@ -15,6 +16,7 @@ import { MapView } from './map-view';
 })
 export class NearbyPage {
   protected readonly loc = inject(LocationStore);
+  private readonly seo = inject(Seo);
   protected readonly catalog = inject(CatalogStore);
   protected readonly stores = STORES;
   protected readonly km = km;
@@ -46,4 +48,13 @@ export class NearbyPage {
       };
     }),
   );
+
+  constructor() {
+    this.seo.set({
+      title: 'Tiendas cerca · Ñapa',
+      description: 'Supermercados y tiendas cerca de ti, con sus mejores ofertas.',
+      path: 'cerca',
+      noindex: true,
+    });
+  }
 }
