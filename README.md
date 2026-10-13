@@ -168,6 +168,7 @@ En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_
 - `GET /api/channel/post?format=whatsapp|telegram`: el top del día (solo precios en vivo, sin descuentos inflados, uno por producto) con enlaces de afiliado si están configurados, listo para copiar y pegar. WhatsApp Channels no tiene API para publicar: se pega a mano desde el teléfono.
 - `POST /api/channel/publish` con `Authorization: Bearer <ADMIN_TOKEN>` publica en Telegram (Bot API `sendMessage`). Apagado sin `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHANNEL_ID` en Render.
 - `.github/workflows/channel.yml` lo llama cada día a las 7:00 a. m. (Colombia): primero despierta Render y luego publica. Necesita los secretos del repositorio `NAPA_API_URL` y `ADMIN_TOKEN`.
+
 ## SEO: páginas prerenderizadas (SSG)
 
 - `pnpm --filter @napa/web build:pages` prerenderiza con `@angular/ssr` (salida estática) el inicio, `/categoria/:cat`, `/fuentes`, las páginas legales y una página por producto de la **foto de precios reales** (`apps/web/src/snapshot.json`, solo ofertas en vivo de Jumbo y Olímpica).
