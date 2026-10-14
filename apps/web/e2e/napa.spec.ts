@@ -284,3 +284,15 @@ test.describe('SEO: HTML prerenderizado', () => {
     expect(await missing.text()).toContain('<app-root');
   });
 });
+
+test('compartir por WhatsApp desde la tarjeta y la ficha', async ({ page }) => {
+  await page.goto('');
+  const card = page.getByTestId('top').locator('article').first();
+  const href = await card.getByTestId('share').getAttribute('href');
+  expect(href).toMatch(/^https:\/\/wa\.me\/\?text=Mira%20este%20precio%20en%20%C3%91apa/);
+  expect(decodeURIComponent(href!)).toMatch(/\$[\d.]+.*\/producto\//);
+  await card.getByTestId('compare').click();
+  const share = page.getByTestId('share').filter({ visible: true }).first();
+  await expect(share).toContainText('Compartir por WhatsApp');
+  await expect(share).toHaveAttribute('target', '_blank');
+});
