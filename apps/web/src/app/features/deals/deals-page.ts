@@ -18,6 +18,7 @@ import {
   type SortKey,
 } from '@napa/deals-engine';
 import { SITE_CONFIG } from '../../core/site-config';
+import { isGrocery } from '../../core/staples';
 import { CatalogStore } from '../../core/catalog.store';
 import { CATEGORY_ICON, cop, pct } from '../../core/format';
 import { LocationStore } from '../../core/location.store';
@@ -110,7 +111,12 @@ export class DealsPage {
   protected readonly honest = computed(() =>
     filterOffers(this.catalog.scored(), { onlyHonest: true }),
   );
-  protected readonly top = computed(() => sortOffers(bestPerProduct(this.honest())).slice(0, 8));
+  /** Top de hoy: solo mercado (como el canal); si no alcanza (p. ej. la demo), se completa. */
+  protected readonly top = computed(() => {
+    const ranked = sortOffers(bestPerProduct(this.honest()));
+    const grocery = ranked.filter((s) => isGrocery(s.offer));
+    return (grocery.length >= 4 ? grocery : ranked).slice(0, 8);
+  });
   protected readonly byCategory = computed(() => topByCategory(this.honest(), 4));
   protected readonly stats = computed(() => {
     const all = this.catalog.scored();

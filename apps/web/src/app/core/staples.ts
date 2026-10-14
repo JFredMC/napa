@@ -18,7 +18,7 @@ const norm = (s: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 const NOT_GROCERY =
-  /\b(extractor|organizador|camion|juguete|cuna|olla|hervidor|cafetera|sofa|termo|vaso|toalla|cobija|silla|lampara|sarten|licuadora|dispensador|portarrollo|molde|recipiente|set|kit|whiskas|kelcat|gato|gatos|perro|perros|mascota|mascotas|alfombra)\b/;
+  /\b(extractor|organizador|camion|juguete|cuna|olla|hervidor|espumador|inflable|cafetera|sofa|termo|vaso|toalla|cobija|silla|lampara|sarten|licuadora|dispensador|portarrollo|molde|recipiente|set|kit|whiskas|kelcat|gato|gatos|perro|perros|mascota|mascotas|alfombra)\b/;
 
 /** El producto ES el básico: el título empieza por él ("Arroz Roa…", no "Atún en aceite"). */
 export function isStaple(title: string, staple: Staple): boolean {
@@ -35,6 +35,21 @@ export function isStaple(title: string, staple: Staple): boolean {
     hit(words[0]) &&
     kws.slice(1).every((k) => words.some((w) => w.startsWith(k.slice(0, 5))))
   );
+}
+
+/** Categorías de mercado (las mismas del post del canal). */
+export const GROCERY_CATEGORIES = new Set([
+  'despensa',
+  'lacteos',
+  'bebidas',
+  'aseo-hogar',
+  'cuidado-personal',
+  'bebe',
+]);
+
+/** Producto de mercado: categoría de mercado, sin palabras de hogar/juguetes/mascotas y precio sensato. */
+export function isGrocery(o: Offer): boolean {
+  return GROCERY_CATEGORIES.has(o.category) && !NOT_GROCERY.test(norm(o.title)) && !absurdUnit(o);
 }
 
 /** Precio por kilo/litro imposible (producto al peso mal cargado). */
