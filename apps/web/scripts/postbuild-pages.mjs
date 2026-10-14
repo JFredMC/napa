@@ -52,6 +52,17 @@ export function postbuild(config, extraRoutes = []) {
     const fixed = html.replaceAll('https://napaofertas.com/', config.siteUrl);
     if (fixed !== html) writeFileSync(file, fixed);
   }
+  // Google Search Console (método meta o archivo HTML).
+  const gv = config.googleVerification ?? {};
+  if (gv.meta) {
+    const tag = `<meta name="google-site-verification" content="${gv.meta}">`;
+    for (const file of htmlFiles(out)) {
+      const html = readFileSync(file, 'utf8');
+      if (!html.includes('google-site-verification'))
+        writeFileSync(file, html.replace('</head>', `${tag}</head>`));
+    }
+  }
+  if (gv.file) writeFileSync(out + gv.file, `google-site-verification: ${gv.file}\n`);
   const moved = flattenRoutes();
   // Rutas solo de cliente (lista, guardados, cerca, productos nuevos): GitHub Pages sirve
   // 404.html, que es la app sin prerenderizar y el router resuelve la ruta.

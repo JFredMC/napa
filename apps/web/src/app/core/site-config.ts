@@ -11,6 +11,7 @@ export interface SiteConfig {
   affiliates: Partial<Record<string, string>>;
   adsense: { client: string; slots: { feed: string | null; product: string | null } } | null;
   analytics: { goatcounter: string | null; cloudflareToken: string | null };
+  googleVerification?: { meta: string | null; file: string | null };
   contactEmail: string | null;
   legalOwner: string | null;
   channels: { telegram: string | null; telegramBot?: string | null; whatsapp: string | null };
