@@ -1,0 +1,137 @@
+[
+  {
+    "slug": "arroz",
+    "name": "arroz",
+    "q": "arroz"
+  },
+  {
+    "slug": "aceite",
+    "name": "aceite",
+    "q": "aceite"
+  },
+  {
+    "slug": "huevos",
+    "name": "huevos",
+    "q": "huevos"
+  },
+  {
+    "slug": "leche",
+    "name": "leche",
+    "q": "leche"
+  },
+  {
+    "slug": "azucar",
+    "name": "azúcar",
+    "q": "azucar"
+  },
+  {
+    "slug": "cafe",
+    "name": "café",
+    "q": "cafe"
+  },
+  {
+    "slug": "panela",
+    "name": "panela",
+    "q": "panela"
+  },
+  {
+    "slug": "frijol",
+    "name": "fríjol",
+    "q": "frijol"
+  },
+  {
+    "slug": "lentejas",
+    "name": "lentejas",
+    "q": "lentejas"
+  },
+  {
+    "slug": "garbanzos",
+    "name": "garbanzos",
+    "q": "garbanzos"
+  },
+  {
+    "slug": "pasta",
+    "name": "pasta",
+    "q": "pasta"
+  },
+  {
+    "slug": "atun",
+    "name": "atún",
+    "q": "atun"
+  },
+  {
+    "slug": "sardinas",
+    "name": "sardinas",
+    "q": "sardinas"
+  },
+  {
+    "slug": "sal",
+    "name": "sal",
+    "q": "sal"
+  },
+  {
+    "slug": "harina-de-maiz",
+    "name": "harina de maíz",
+    "q": "harina maiz"
+  },
+  {
+    "slug": "avena",
+    "name": "avena",
+    "q": "avena"
+  },
+  {
+    "slug": "chocolate",
+    "name": "chocolate",
+    "q": "chocolate"
+  },
+  {
+    "slug": "mantequilla",
+    "name": "mantequilla",
+    "q": "mantequilla"
+  },
+  {
+    "slug": "queso",
+    "name": "queso",
+    "q": "queso"
+  },
+  {
+    "slug": "galletas",
+    "name": "galletas",
+    "q": "galletas"
+  },
+  {
+    "slug": "papel-higienico",
+    "name": "papel higiénico",
+    "q": "papel higienico"
+  },
+  {
+    "slug": "detergente",
+    "name": "detergente",
+    "q": "detergente"
+  },
+  {
+    "slug": "jabon",
+    "name": "jabón",
+    "q": "jabon"
+  },
+  {
+    "slug": "lavaloza",
+    "name": "lavaloza",
+    "q": "lavaloza"
+  },
+  {
+    "slug": "shampoo",
+    "name": "shampoo",
+    "q": "shampoo"
+  },
+  {
+    "slug": "crema-dental",
+    "name": "crema dental",
+    "q": "crema dental"
+  },
+  {
+    "slug": "panales",
+    "name": "pañales",
+    "q": "panales"
+  }
+]

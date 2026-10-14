@@ -1,6 +1,8 @@
 {
   "siteUrl": "https://napaofertas.com/",
-  "promos": { "temu": null },
+  "promos": {
+    "temu": null
+  },
   "apiUrl": null,
   "affiliates": {},
   "adsense": null,

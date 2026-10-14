@@ -215,6 +215,12 @@
         <span class="muted">(afiliado)</span>
       </p>
     }
+    <nav class="price-links small" aria-label="Precios de hoy" data-testid="footer-prices">
+      <span class="muted">Precios de hoy:</span>
+      @for (s of staples; track s.slug) {
+        <a [routerLink]="['/precio', s.slug]">{{ s.name }}</a>
+      }
+    </nav>
     <nav class="legal-links small" aria-label="Legal" data-testid="legal-links">
       <a routerLink="/privacidad">Privacidad</a>
       <a routerLink="/terminos">Términos</a>

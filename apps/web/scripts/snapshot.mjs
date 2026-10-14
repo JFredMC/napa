@@ -2,7 +2,7 @@
 // Pide al backend de Ñapa (que respeta robots.txt, caché y ritmo de cada tienda) unas búsquedas
 // básicas y guarda solo las ofertas en vivo en src/snapshot.json. Si algo falla, deja el archivo
 // anterior: el build nunca depende de que Render esté despierto.
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const api = (process.env.NAPA_API_URL || 'https://napa-api.onrender.com').replace(/\/$/, '');
 const TERMS = [
@@ -19,6 +19,9 @@ const TERMS = [
   'panales',
   'chocolate',
 ];
+// Básicos con página /precio/<slug> (src/staples.json): también se consultan.
+const STAPLES = JSON.parse(readFileSync(new URL('../src/staples.json', import.meta.url), 'utf8'));
+for (const s of STAPLES) if (!TERMS.includes(s.q)) TERMS.push(s.q);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function wake() {
@@ -39,9 +42,12 @@ async function main() {
   if (!(await wake())) throw new Error(`${api} no respondió`);
   const offers = new Map();
   for (const q of TERMS) {
-    const res = await fetch(`${api}/api/search?q=${q}&stores=jumbo,olimpica&limit=24`, {
-      signal: AbortSignal.timeout(60_000),
-    });
+    const res = await fetch(
+      `${api}/api/search?q=${encodeURIComponent(q)}&stores=jumbo,olimpica&limit=24`,
+      {
+        signal: AbortSignal.timeout(60_000),
+      },
+    );
     if (!res.ok) throw new Error(`${q}: HTTP ${res.status}`);
     const data = await res.json();
     for (const o of data.offers) {

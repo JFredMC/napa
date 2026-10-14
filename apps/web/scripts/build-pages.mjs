@@ -24,4 +24,6 @@ const categories = [...new Set(snapshot.offers.map((o) => `categoria/${o.categor
 const products = [
   ...new Set(snapshot.offers.map((o) => `producto/${encodeURIComponent(o.productKey)}`)),
 ];
-postbuild(config, [...categories, ...products]);
+const staples = JSON.parse(readFileSync(new URL('../src/staples.json', import.meta.url), 'utf8'));
+const prices = staples.map((s) => `precio/${s.slug}`);
+postbuild(config, [...categories, ...prices, ...products]);

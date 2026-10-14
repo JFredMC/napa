@@ -14,6 +14,7 @@ import { API_URL, switchMode } from './core/mode';
 import { ThemeStore } from './core/theme.store';
 import { ConsentStore } from './core/consent.store';
 import { SITE_CONFIG } from './core/site-config';
+import { STAPLES } from './core/staples';
 import { Trackers } from './core/trackers';
 import { ConsentBanner } from './shared/consent-banner';
 import { Toast } from './shared/toast';
@@ -35,6 +36,7 @@ export class App {
   protected readonly bogotaDateTime = bogotaDateTime;
   protected readonly consent = inject(ConsentStore);
   protected readonly site = inject(SITE_CONFIG);
+  protected readonly staples = STAPLES;
 
   constructor() {
     inject(Trackers).start();
