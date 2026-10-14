@@ -26,7 +26,9 @@ export function integritySignature(
   currency: string,
   secret: string,
 ): string {
-  return createHash('sha256').update(`${reference}${amountInCents}${currency}${secret}`).digest('hex');
+  return createHash('sha256')
+    .update(`${reference}${amountInCents}${currency}${secret}`)
+    .digest('hex');
 }
 
 /**
@@ -55,7 +57,8 @@ export class WompiController {
         `amount debe ser un entero entre ${WOMPI_MIN_COP} y ${WOMPI_MAX_COP} COP`,
       );
     }
-    const reference = `JFD-${Date.now().toString(36)}-${randomBytes(5).toString('hex')}`.toUpperCase();
+    const reference =
+      `JFD-${Date.now().toString(36)}-${randomBytes(5).toString('hex')}`.toUpperCase();
     const amountInCents = amount * 100;
     return {
       reference,

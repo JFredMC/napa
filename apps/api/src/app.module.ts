@@ -24,7 +24,13 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: config.clientRpm }])],
-      controllers: [SearchController, ClicksController, ChannelController, AlertsController, WompiController],
+      controllers: [
+        SearchController,
+        ClicksController,
+        ChannelController,
+        AlertsController,
+        WompiController,
+      ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         {
