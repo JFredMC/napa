@@ -1881,7 +1881,7 @@ table.sources td:last-child {
   color: var(--muted);
   margin-bottom: 4px;
 }
-.consent {
+.consent-banner {
   position: fixed;
   z-index: 60;
   left: 12px;
@@ -1896,7 +1896,7 @@ table.sources td:last-child {
   padding: 16px 18px;
   font-size: 14px;
 }
-.consent h2 {
+.consent-banner h2 {
   font-size: 16px;
   margin: 0 0 6px;
 }
@@ -1912,7 +1912,7 @@ table.sources td:last-child {
   gap: 8px;
 }
 @media (max-width: 720px) {
-  .consent {
+  .consent-banner {
     bottom: 76px;
   }
 }

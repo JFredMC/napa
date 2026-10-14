@@ -11,6 +11,18 @@ test.beforeEach(async ({ page }) => {
       localStorage.clear();
       // Estas pruebas cubren la demo; el modo API tiene las suyas (api.spec.ts).
       localStorage.setItem('napa:mode', 'demo');
+      // El sitio real tiene analítica: se decide el consentimiento de antemano ("solo necesarias")
+      // para que el banner no tape botones. Su propia prueba está más abajo.
+      localStorage.setItem(
+        'napa:consent',
+        JSON.stringify({
+          version: 1,
+          analytics: false,
+          ads: false,
+          personalizedAds: false,
+          decidedAt: '2026-10-13T00:00:00.000Z',
+        }),
+      );
       sessionStorage.setItem('e2e', '1');
     }
   });
@@ -125,6 +137,22 @@ test('cerca: con permiso de ubicación muestra sedes reales de OSM y sus ofertas
   await page.getByRole('link', { name: /Ver \d+ precios de D1/ }).click();
   await expect(page).toHaveURL(/tiendas=d1/);
   await expect(page.getByTestId('results').locator('article').first()).toContainText('D1');
+});
+
+test('consentimiento: el banner no tapa la tarjeta de ubicación de "Cerca"', async ({ page }) => {
+  await page.goto('cerca');
+  await page.evaluate(() => localStorage.removeItem('napa:consent'));
+  await page.reload();
+  // La tarjeta de ubicación queda en el flujo de la página (no flotando sobre el banner).
+  await expect(page.getByTestId('consent')).toHaveCSS('position', 'static');
+  const banner = page.getByTestId('consent-banner');
+  if (await banner.count()) {
+    await expect(banner).toHaveCSS('position', 'fixed');
+    await page.getByTestId('consent-reject').click();
+    await expect(banner).toHaveCount(0);
+  }
+  await expect(page.getByTestId('locate')).toBeVisible();
+  await page.getByTestId('locate').click({ trial: true });
 });
 
 test('fuentes: explica qué es real, qué es simulado y por qué', async ({ page }) => {
