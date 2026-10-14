@@ -18,7 +18,7 @@ import { SITE_CONFIG } from '../core/site-config';
   template: `
     @if (consent.showBanner()) {
       <section
-        class="consent"
+        class="consent-banner"
         role="dialog"
         aria-modal="false"
         aria-labelledby="consent-title"
