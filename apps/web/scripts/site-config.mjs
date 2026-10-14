@@ -87,6 +87,16 @@ export function buildSiteConfig() {
         'token hexadecimal de 32 caracteres',
       ),
     },
+    // Google Search Console: contenido de la meta google-site-verification y/o nombre del
+    // archivo HTML (googleXXXXXXXXXXXXXXXX.html) que Google pide subir a la raíz.
+    googleVerification: {
+      meta: pick('NAPA_GOOGLE_SITE_VERIFICATION', /^[\w-]{20,100}$/, 'solo el valor de content=""'),
+      file: pick(
+        'NAPA_GOOGLE_VERIFICATION_FILE',
+        /^google[0-9a-f]{12,20}\.html$/,
+        'nombre tipo google1234abcd5678ef90.html',
+      ),
+    },
     contactEmail: pick('NAPA_CONTACT_EMAIL', /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'correo inválido'),
     legalOwner: pick('NAPA_LEGAL_OWNER'),
     channels: {
