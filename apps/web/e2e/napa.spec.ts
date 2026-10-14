@@ -290,7 +290,17 @@ test('compartir por WhatsApp desde la tarjeta y la ficha', async ({ page }) => {
   const card = page.getByTestId('top').locator('article').first();
   const href = await card.getByTestId('share').getAttribute('href');
   expect(href).toMatch(/^https:\/\/wa\.me\/\?text=Mira%20este%20precio%20en%20%C3%91apa/);
-  expect(decodeURIComponent(href!)).toMatch(/\$[\d.]+.*\/producto\//);
+  const text = decodeURIComponent(href!);
+  expect(text).toMatch(/\$[\d.]+.*\/producto\//);
+  // La tienda del mensaje es la del enlace (?tienda=…), que abre la ficha en esa tienda.
+  const store = text.match(/ en ([^.]+)\. Compara/)![1]!;
+  const storeId = text.match(/tienda=([a-z]+)/)![1]!;
+  expect(
+    store
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase(),
+  ).toContain(storeId.slice(0, 4));
   await card.getByTestId('compare').click();
   const share = page.getByTestId('share').filter({ visible: true }).first();
   await expect(share).toContainText('Compartir por WhatsApp');
