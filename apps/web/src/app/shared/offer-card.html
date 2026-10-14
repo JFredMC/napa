@@ -85,7 +85,7 @@
       [title]="o().title"
       [price]="o().price"
       [store]="store()?.name ?? null"
-      [path]="'producto/' + o().productKey"
+      [path]="'producto/' + o().productKey + '?tienda=' + o().storeId"
       [iconOnly]="true"
     />
     <a class="btn small" [routerLink]="['/producto', o().productKey]" data-testid="compare"

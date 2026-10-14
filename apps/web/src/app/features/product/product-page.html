@@ -61,7 +61,9 @@
           [title]="p.title"
           [price]="cheapest()?.offer?.price ?? p.price"
           [store]="stores[cheapest()?.offer?.storeId ?? p.storeId]?.name ?? null"
-          [path]="'producto/' + p.productKey"
+          [path]="
+            'producto/' + p.productKey + '?tienda=' + (cheapest()?.offer?.storeId ?? p.storeId)
+          "
         />
         @if (alertUrl(); as u) {
           <a
