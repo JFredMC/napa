@@ -1,6 +1,7 @@
 import { RenderMode, type ServerRoute } from '@angular/ssr';
 import { CATEGORY_IDS } from '@napa/connectors';
 import { loadSnapshot } from './core/snapshot';
+import { STAPLES } from './core/staples';
 
 /**
  * Qué se prerenderiza al compilar (sitio estático en GitHub Pages):
@@ -21,6 +22,11 @@ export const serverRoutes: ServerRoute[] = [
       const snap = await loadSnapshot();
       return [...new Set(snap.offers.map((o) => o.productKey))].map((key) => ({ key }));
     },
+  },
+  {
+    path: 'precio/:slug',
+    renderMode: RenderMode.Prerender,
+    getPrerenderParams: async () => STAPLES.map((s) => ({ slug: s.slug })),
   },
   { path: 'fuentes', renderMode: RenderMode.Prerender },
   { path: 'privacidad', renderMode: RenderMode.Prerender },

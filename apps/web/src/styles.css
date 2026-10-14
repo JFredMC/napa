@@ -1967,3 +1967,35 @@ table.sources td:last-child {
   font-size: 1.25rem;
   color: #fb7701;
 }
+
+/* Páginas /precio/<producto> */
+.price-page .lead {
+  max-width: 760px;
+  line-height: 1.6;
+}
+.price-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0;
+}
+.faq details {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.faq p {
+  margin: 8px 0 0;
+  max-width: 760px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

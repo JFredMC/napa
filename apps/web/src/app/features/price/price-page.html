@@ -1,0 +1,89 @@
+<section class="page price-page">
+  <a class="back small" routerLink="/"
+    ><i class="bi bi-arrow-left" aria-hidden="true"></i> Ofertas</a
+  >
+  @if (staple(); as s) {
+    <h1 data-testid="price-title">Precio de {{ s.name }} hoy en Colombia</h1>
+    <p class="lead" data-testid="price-intro">
+      @if (min(); as m) {
+        Hoy {{ s.name }} está desde <b class="num">{{ cop(m.price) }}</b> en
+        {{ stores[m.storeId]?.name }}
+        @if (max(); as x) {
+          @if (x.price !== m.price) {
+            y llega a <span class="num">{{ cop(x.price) }}</span>
+          }
+        }
+        entre las {{ offers().length }} opciones que encontramos en
+        {{ storeCount() === 1 ? '1 tienda' : storeCount() + ' tiendas' }}
+        ({{ asOf() }}).
+      } @else {
+        Estamos consultando los precios de {{ s.name }} en las tiendas con datos en vivo.
+      }
+      Ñapa compara precios reales de Jumbo y Olímpica; el resto de tiendas no tiene datos públicos
+      que podamos consultar, así que no aparecen aquí. Compara por unidad: el paquete más barato no
+      siempre es el que más rinde.
+    </p>
+
+    @if (offers().length) {
+      <div class="card table-wrap">
+        <table class="sources" data-testid="price-table">
+          <caption class="sr-only">
+            Precios de
+            {{
+              s.name
+            }}
+            por tienda
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Producto</th>
+              <th scope="col">Tienda</th>
+              <th scope="col">Precio</th>
+              <th scope="col">Por unidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of offers(); track o.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/producto', o.productKey]">{{ o.title }}</a>
+                </td>
+                <td>{{ stores[o.storeId]?.name }}</td>
+                <td class="num">
+                  <b>{{ cop(o.price) }}</b>
+                </td>
+                <td class="num muted">{{ unit(o) || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">
+        Precios del momento en las tiendas en línea; pueden variar por sede y no incluyen
+        promociones de tienda física.
+        <a [routerLink]="['/']" [queryParams]="{ q: s.q }">Ver todas las ofertas de {{ s.name }}</a
+        >.
+      </p>
+    }
+
+    <h2>Preguntas frecuentes</h2>
+    <div class="faq" data-testid="price-faq">
+      @for (f of faq(); track f.q) {
+        <details>
+          <summary>{{ f.q }}</summary>
+          <p>{{ f.a }}</p>
+        </details>
+      }
+    </div>
+
+    <h2>Otros precios de hoy</h2>
+    <p class="price-links small">
+      @for (o of others(); track o.slug) {
+        <a [routerLink]="['/precio', o.slug]">{{ o.name }}</a>
+      }
+    </p>
+  } @else {
+    <h1>No tenemos esa página de precios</h1>
+    <p><a routerLink="/">Volver a las ofertas</a></p>
+  }
+</section>

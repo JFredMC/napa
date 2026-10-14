@@ -296,3 +296,21 @@ test('compartir por WhatsApp desde la tarjeta y la ficha', async ({ page }) => {
   await expect(share).toContainText('Compartir por WhatsApp');
   await expect(share).toHaveAttribute('target', '_blank');
 });
+
+test('SEO: /precio/arroz prerenderizada con título, canónica, FAQ y enlaces del pie', async ({
+  page,
+  request,
+}) => {
+  const html = await (await request.get('precio/arroz')).text();
+  expect(html).toContain('<title>Precio de arroz hoy en Colombia | Ñapa</title>');
+  expect(html).toMatch(/rel="canonical" href="[^"]*\/precio\/arroz"/);
+  expect(html).toContain('"FAQPage"');
+  await page.goto('precio/arroz');
+  await expect(page.getByTestId('price-title')).toHaveText('Precio de arroz hoy en Colombia');
+  await expect(page.getByTestId('price-faq').locator('details')).toHaveCount(4);
+  await expect(
+    page.getByTestId('footer-prices').getByRole('link', { name: 'lentejas' }),
+  ).toBeVisible();
+  const sitemap = await (await request.get('sitemap.xml')).text();
+  expect(sitemap).toContain('/precio/papel-higienico</loc>');
+});
