@@ -102,6 +102,29 @@
       }
     </div>
 
+    @if (site.promos?.temu; as t) {
+      <a
+        class="card promo-temu"
+        [href]="t.url"
+        target="_blank"
+        rel="sponsored noopener"
+        data-testid="promo-temu"
+      >
+        <i class="bi bi-bag-heart" aria-hidden="true"></i>
+        <span class="grow">
+          <b>Ofertas en Temu</b>
+          @if (t.code) {
+            <span class="muted small">
+              · Código: <code>{{ t.code }}</code></span
+            >
+          }
+        </span>
+        <small class="muted"
+          >Enlace de afiliado <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+        ></small>
+      </a>
+    }
+
     <app-ad-slot slot="feed" />
 
     @for (c of categories; track c) {

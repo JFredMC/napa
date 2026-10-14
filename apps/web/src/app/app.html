@@ -207,6 +207,14 @@
         >
       </p>
     }
+    @if (site.promos?.temu; as t) {
+      <p class="small channels" data-testid="footer-temu">
+        <a [href]="t.url" target="_blank" rel="sponsored noopener"
+          >Ofertas en Temu{{ t.code ? ' · Código: ' + t.code : '' }}</a
+        >
+        <span class="muted">(afiliado)</span>
+      </p>
+    }
     <nav class="legal-links small" aria-label="Legal" data-testid="legal-links">
       <a routerLink="/privacidad">Privacidad</a>
       <a routerLink="/terminos">Términos</a>

@@ -64,6 +64,11 @@ services:
         sync: false
       - key: ALERTS_GITHUB_TOKEN
         sync: false
+      # Referido de Temu (público): línea al final del post del canal.
+      - key: NAPA_AFF_TEMU_URL
+        value: https://temu.to/k/gxqocgbt517
+      - key: NAPA_AFF_TEMU_CODE
+        value: aln328979
       - key: CHANNEL_TOP_N
         value: '5'
       - key: ML_CLIENT_ID

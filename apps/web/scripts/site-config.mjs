@@ -55,8 +55,15 @@ export function buildSiteConfig() {
     'formato ca-pub-0000000000000000',
   );
   const slot = (k) => pick(k, /^\d{6,12}$/, 'el ID de bloque es numérico');
+  const temuUrl = pick(
+    'NAPA_AFF_TEMU_URL',
+    /^https:\/\/(temu\.to|(www\.)?temu\.com)\/[^\s]+$/,
+    'enlace https://temu.to/... o https://www.temu.com/...',
+  );
+  const temuCode = pick('NAPA_AFF_TEMU_CODE', /^[A-Za-z0-9]{4,20}$/, 'código alfanumérico');
   return {
     siteUrl,
+    promos: { temu: temuUrl ? { url: temuUrl, code: temuCode } : null },
     apiUrl: pick('NAPA_API_URL', /^https:\/\/[^\s/]+$/, 'https://host sin barra final'),
     affiliates,
     adsense: client

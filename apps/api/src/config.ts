@@ -25,6 +25,8 @@ export interface AppConfig {
   alerts: { gistId: string; githubToken: string } | null;
   /** URL pública de la API (Render la da en RENDER_EXTERNAL_URL) para el webhook. */
   publicApiUrl: string | null;
+  /** Referido de Temu para la línea final del post del canal. */
+  temu: { url: string; code: string | null } | null;
   /** Ofertas por publicación del canal. */
   channelTopN: number;
 }
@@ -67,6 +69,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
         ? { gistId: env['ALERTS_GIST_ID'], githubToken: env['ALERTS_GITHUB_TOKEN'] }
         : null,
     publicApiUrl: env['TELEGRAM_WEBHOOK_BASE'] ?? env['RENDER_EXTERNAL_URL'] ?? null,
+    temu: /^https:\/\/(temu\.to|(www\.)?temu\.com)\/\S+$/.test(env['NAPA_AFF_TEMU_URL'] ?? '')
+      ? { url: env['NAPA_AFF_TEMU_URL']!, code: env['NAPA_AFF_TEMU_CODE']?.trim() || null }
+      : null,
     channelTopN: Math.min(10, num('CHANNEL_TOP_N', 5, 1)),
   };
 }

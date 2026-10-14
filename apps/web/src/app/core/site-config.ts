@@ -4,6 +4,8 @@ import raw from '../../site-config.json';
 /** Configuración pública del sitio (la genera scripts/site-config.mjs desde variables NAPA_*). */
 export interface SiteConfig {
   siteUrl: string;
+  /** Enlaces de referido (afiliado) fuera del catálogo, p. ej. Temu. */
+  promos?: { temu: { url: string; code: string | null } | null };
   /** Sobrescribe la URL del backend de environment.ts (p. ej. un dominio propio en Render). */
   apiUrl: string | null;
   affiliates: Partial<Record<string, string>>;
