@@ -295,6 +295,8 @@ test('compartir por WhatsApp desde la tarjeta y la ficha', async ({ page }) => {
   const share = page.getByTestId('share').filter({ visible: true }).first();
   await expect(share).toContainText('Compartir por WhatsApp');
   await expect(share).toHaveAttribute('target', '_blank');
+});
+
 test('SEO: /precio/arroz prerenderizada con título, canónica, FAQ y enlaces del pie', async ({
   page,
   request,
