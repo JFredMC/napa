@@ -57,6 +57,12 @@
         <button type="button" class="btn" (click)="addToList()" data-testid="add-list">
           <i class="bi bi-cart-plus" aria-hidden="true"></i> A la lista
         </button>
+        <app-share-button
+          [title]="p.title"
+          [price]="cheapest()?.offer?.price ?? p.price"
+          [store]="stores[cheapest()?.offer?.storeId ?? p.storeId]?.name ?? null"
+          [path]="'producto/' + p.productKey"
+        />
         @if (alertUrl(); as u) {
           <a
             class="btn ghost"

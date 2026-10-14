@@ -81,6 +81,13 @@
       <i class="bi bi-cart-plus" aria-hidden="true"></i> Lista
     </button>
     <app-store-link [offer]="o()" [iconOnly]="true" />
+    <app-share-button
+      [title]="o().title"
+      [price]="o().price"
+      [store]="store()?.name ?? null"
+      [path]="'producto/' + o().productKey"
+      [iconOnly]="true"
+    />
     <a class="btn small" [routerLink]="['/producto', o().productKey]" data-testid="compare"
       >Comparar</a
     >

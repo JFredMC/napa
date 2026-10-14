@@ -25,6 +25,7 @@ import { Seo } from '../../core/seo';
 import { SITE_CONFIG, telegramAlertUrl } from '../../core/site-config';
 import { PriceChart } from '../../shared/price-chart';
 import { StoreLink } from '../../shared/store-link';
+import { ShareButton } from '../../shared/share-button';
 import { AdSlot } from '../../shared/ad-slot';
 import { Toast } from '../../shared/toast';
 import { ScoreRing, SourceTag, StoreChip, Thumb, Verdict } from '../../shared/ui';
@@ -41,6 +42,7 @@ import { ScoreRing, SourceTag, StoreChip, Thumb, Verdict } from '../../shared/ui
     Thumb,
     StoreLink,
     AdSlot,
+    ShareButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-page.html',
