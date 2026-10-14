@@ -17,6 +17,7 @@ import {
   type CategoryId,
   type SortKey,
 } from '@napa/deals-engine';
+import { SITE_CONFIG } from '../../core/site-config';
 import { CatalogStore } from '../../core/catalog.store';
 import { CATEGORY_ICON, cop, pct } from '../../core/format';
 import { LocationStore } from '../../core/location.store';
@@ -57,6 +58,7 @@ export class DealsPage {
   protected readonly categoryLabel = CATEGORY_LABEL;
   protected readonly categoryIcon = CATEGORY_ICON;
   protected readonly storeIds = STORE_IDS;
+  protected readonly site = inject(SITE_CONFIG);
   protected readonly stores = STORES;
   protected readonly sorts = SORTS;
   protected readonly shown = signal(PAGE);

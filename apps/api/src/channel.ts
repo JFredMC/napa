@@ -93,6 +93,7 @@ export function formatPost(
   format: PostFormat,
   siteUrl: string,
   date: string,
+  temu: { url: string; code: string | null } | null = null,
 ): string {
   const tg = format === 'telegram';
   const bold = (s: string) => (tg ? `<b>${esc(s)}</b>` : `*${s}*`);
@@ -109,7 +110,16 @@ export function formatPost(
     );
     lines.push('');
   });
-  if (deals.some((d) => d.affiliate))
+  if (temu) {
+    const code = temu.code ? ` · Código: ${tg ? `<b>${esc(temu.code)}</b>` : temu.code}` : '';
+    lines.push(
+      tg
+        ? `🛍️ <a href="${esc(temu.url)}">Ofertas en Temu</a>${code} (afiliado)`
+        : `🛍️ Ofertas en Temu: ${temu.url}${code} (afiliado)`,
+      '',
+    );
+  }
+  if (deals.some((d) => d.affiliate) || temu)
     lines.push(
       'Algunos enlaces son de afiliado: si compras, Ñapa puede recibir una comisión sin costo para ti.',
     );
@@ -196,7 +206,10 @@ export class ChannelService {
 
   async post(format: PostFormat): Promise<{ text: string; deals: ChannelDeal[] }> {
     const deals = await this.topDeals();
-    return { text: formatPost(deals, format, this.config.siteUrl, this.today()), deals };
+    return {
+      text: formatPost(deals, format, this.config.siteUrl, this.today(), this.config.temu),
+      deals,
+    };
   }
 
   /** Publica en el canal de Telegram (el bot debe ser administrador del canal). */

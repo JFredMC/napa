@@ -150,17 +150,18 @@ Nada de esto trae IDs en el código: sin variables, todo queda apagado y los enl
 
 Variables del repositorio (Settings → Secrets and variables → Actions → Variables), leídas por `pages.yml`:
 
-| Variable                                              | Ejemplo                                    | Para qué                                        |
-| ----------------------------------------------------- | ------------------------------------------ | ----------------------------------------------- |
-| `NAPA_SITE_URL`                                       | `https://napa.co/`                         | Dominio propio: base href, CNAME, sitemap, OG   |
-| `NAPA_API_URL`                                        | `https://napa-api.onrender.com`            | Backend (si cambia)                             |
-| `NAPA_AFF_<TIENDA>`                                   | `https://ad.admitad.com/g/XXXX/?ulp={url}` | Regla de afiliado por tienda (`SHEIN`, `TEMU`…) |
-| `NAPA_ADSENSE_CLIENT`                                 | `ca-pub-0000000000000000`                  | ID de editor de AdSense                         |
-| `NAPA_ADSENSE_SLOT_FEED`, `NAPA_ADSENSE_SLOT_PRODUCT` | `1234567890`                               | IDs de los bloques de anuncios                  |
-| `NAPA_GOATCOUNTER` o `NAPA_CF_BEACON_TOKEN`           | `napa`                                     | Analítica sin cookies                           |
-| `NAPA_CONTACT_EMAIL`, `NAPA_LEGAL_OWNER`              | `datos@napa.co`                            | Responsable y contacto en la política de datos  |
-| `NAPA_TELEGRAM_BOT_URL`                               | `https://t.me/NapaOfertasBot`              | Botón de alertas (deep link al bot)             |
-| `NAPA_TELEGRAM_URL`, `NAPA_WHATSAPP_URL`              | `https://t.me/napaofertas`                 | Enlaces a los canales en el pie                 |
+| Variable                                              | Ejemplo                                    | Para qué                                                               |
+| ----------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------- |
+| `NAPA_SITE_URL`                                       | `https://napa.co/`                         | Dominio propio: base href, CNAME, sitemap, OG                          |
+| `NAPA_API_URL`                                        | `https://napa-api.onrender.com`            | Backend (si cambia)                                                    |
+| `NAPA_AFF_<TIENDA>`                                   | `https://ad.admitad.com/g/XXXX/?ulp={url}` | Regla de afiliado por tienda (`SHEIN`, `TEMU`…)                        |
+| `NAPA_ADSENSE_CLIENT`                                 | `ca-pub-0000000000000000`                  | ID de editor de AdSense                                                |
+| `NAPA_ADSENSE_SLOT_FEED`, `NAPA_ADSENSE_SLOT_PRODUCT` | `1234567890`                               | IDs de los bloques de anuncios                                         |
+| `NAPA_GOATCOUNTER` o `NAPA_CF_BEACON_TOKEN`           | `napa`                                     | Analítica sin cookies                                                  |
+| `NAPA_CONTACT_EMAIL`, `NAPA_LEGAL_OWNER`              | `datos@napa.co`                            | Responsable y contacto en la política de datos                         |
+| `NAPA_AFF_TEMU_URL`, `NAPA_AFF_TEMU_CODE`             | `https://temu.to/k/...`, `abc123`          | Banner “Ofertas en Temu” (web, repo vars) y línea en el canal (Render) |
+| `NAPA_TELEGRAM_BOT_URL`                               | `https://t.me/NapaOfertasBot`              | Botón de alertas (deep link al bot)                                    |
+| `NAPA_TELEGRAM_URL`, `NAPA_WHATSAPP_URL`              | `https://t.me/napaofertas`                 | Enlaces a los canales en el pie                                        |
 
 En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_<TIENDA>` para los enlaces del canal.
 

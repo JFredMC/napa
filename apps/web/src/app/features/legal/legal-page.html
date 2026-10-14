@@ -184,6 +184,13 @@
           </li>
         }
       </ul>
+      @if (config.promos?.temu; as t) {
+        <p data-testid="temu-disclosure">
+          <strong>Temu:</strong> algunos enlaces son de afiliado. El banner “Ofertas en Temu” y el
+          código {{ t.code }} son de referido: si compras con ellos, Ñapa puede recibir una comisión
+          o beneficio sin costo extra para ti. Temu no aparece en el ranking por eso.
+        </p>
+      }
       <h2>Publicidad</h2>
       <p>
         Ñapa puede mostrar anuncios de Google AdSense en espacios marcados como “Publicidad”,

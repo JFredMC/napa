@@ -21,3 +21,17 @@ describe('absurdUnitPrice', () => {
     expect(absurdUnitPrice({ price: 97015 })).toBe(false);
   });
 });
+
+describe('formatPost con Temu', () => {
+  it('agrega la línea de referido con el código al final', async () => {
+    const { formatPost } = await import('./channel');
+    const text = formatPost([], 'telegram', 'https://napaofertas.com/', '13 de octubre', {
+      url: 'https://temu.to/k/x',
+      code: 'abc123',
+    });
+    expect(text).toContain(
+      '<a href="https://temu.to/k/x">Ofertas en Temu</a> · Código: <b>abc123</b>',
+    );
+    expect(text).toContain('enlaces son de afiliado');
+  });
+});
