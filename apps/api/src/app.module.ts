@@ -9,6 +9,7 @@ import { ClicksController, ClicksService } from './clicks';
 import { RobotsService } from './robots.service';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
+import { WompiController } from './wompi';
 
 export interface AppDeps {
   config?: AppConfig;
@@ -23,7 +24,13 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: config.clientRpm }])],
-      controllers: [SearchController, ClicksController, ChannelController, AlertsController],
+      controllers: [
+        SearchController,
+        ClicksController,
+        ChannelController,
+        AlertsController,
+        WompiController,
+      ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         {

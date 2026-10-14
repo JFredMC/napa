@@ -71,6 +71,9 @@ services:
         value: aln328979
       - key: CHANNEL_TOP_N
         value: '5'
+      # Firma de integridad del Web Checkout de Wompi (aportes del portafolio). Secreto.
+      - key: WOMPI_INTEGRITY_SECRET
+        sync: false
       - key: ML_CLIENT_ID
         sync: false
       - key: ML_CLIENT_SECRET
