@@ -29,6 +29,16 @@ export interface AppConfig {
   temu: { url: string; code: string | null } | null;
   /** Ofertas por publicación del canal. */
   channelTopN: number;
+  /** Venta de plantillas de Cuadre con Wompi. */
+  cuadre: {
+    integritySecret: string | null;
+    eventsSecret: string | null;
+    filesGistId: string | null;
+    filesKey: string | null;
+    /** API de Wompi para verificar transacciones (sandbox: https://sandbox.wompi.co/v1). */
+    wompiApiUrl: string;
+    siteUrl: string;
+  };
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -73,6 +83,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       ? { url: env['NAPA_AFF_TEMU_URL']!, code: env['NAPA_AFF_TEMU_CODE']?.trim() || null }
       : null,
     channelTopN: Math.min(10, num('CHANNEL_TOP_N', 5, 1)),
+    cuadre: {
+      integritySecret: env['WOMPI_INTEGRITY_SECRET'] || null,
+      eventsSecret: env['WOMPI_EVENTS_SECRET'] || null,
+      filesGistId: env['CUADRE_FILES_GIST_ID'] || null,
+      filesKey: env['CUADRE_FILES_KEY'] || null,
+      wompiApiUrl: (env['WOMPI_API_URL'] ?? 'https://production.wompi.co/v1').replace(/\/$/, ''),
+      siteUrl: (env['CUADRE_SITE_URL'] ?? 'https://cuadrelaboral.com/').replace(/\/?$/, '/'),
+    },
   };
 }
 

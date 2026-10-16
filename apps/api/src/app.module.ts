@@ -10,6 +10,7 @@ import { RobotsService } from './robots.service';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
 import { WompiController } from './wompi';
+import { CuadreController, CuadreService, ORDER_STORE, orderStoreFactory } from './cuadre';
 
 export interface AppDeps {
   config?: AppConfig;
@@ -30,6 +31,7 @@ export class AppModule {
         ChannelController,
         AlertsController,
         WompiController,
+        CuadreController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -49,6 +51,12 @@ export class AppModule {
           inject: [APP_CONFIG, FETCH],
         },
         AlertsService,
+        {
+          provide: ORDER_STORE,
+          useFactory: (c: AppConfig, f: FetchLike) => orderStoreFactory(c, f),
+          inject: [APP_CONFIG, FETCH],
+        },
+        CuadreService,
       ],
     };
   }
