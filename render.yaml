@@ -35,7 +35,7 @@ services:
       - key: NODE_VERSION
         value: '22'
       - key: CORS_ORIGINS
-        value: https://napaofertas.com,https://www.napaofertas.com,https://jfredmc.github.io
+        value: https://napaofertas.com,https://www.napaofertas.com,https://jfredmc.github.io,https://cuadrelaboral.com,https://www.cuadrelaboral.com
       # Éxito y Carulla siguen en la lista para que /api/sources explique por qué están bloqueadas
       # (robots.txt + protección anti-bots); el backend nunca consulta su /api/.
       - key: LIVE_STORES
@@ -73,6 +73,15 @@ services:
         value: '5'
       # Firma de integridad del Web Checkout de Wompi (aportes del portafolio). Secreto.
       - key: WOMPI_INTEGRITY_SECRET
+        sync: false
+      # Eventos de Wompi (checksum de /api/wompi/events) para las plantillas de Cuadre. Secreto.
+      - key: WOMPI_EVENTS_SECRET
+        sync: false
+      # Plantillas completas de Cuadre: gist secreto con los .xlsx cifrados (AES-256-GCM) y su clave.
+      # El repo es público: los archivos nunca se suben aquí.
+      - key: CUADRE_FILES_GIST_ID
+        sync: false
+      - key: CUADRE_FILES_KEY
         sync: false
       - key: ML_CLIENT_ID
         sync: false
