@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { CATEGORY_LABEL, STORES } from '@napa/connectors';
 import type { Offer } from '@napa/deals-engine';
+import { cop } from './format';
 import { SITE_CONFIG } from './site-config';
 
 export interface SeoData {
@@ -99,31 +100,47 @@ export class Seo {
 
   /** Producto con los precios reales de cada tienda (solo ofertas `live`). */
   product(offers: Offer[]): object | null {
-    const live = offers.filter((o) => o.source === 'live');
+    // Sin precio válido no hay oferta que Google pueda mostrar: esa oferta no entra al LD.
+    const live = offers.filter((o) => o.source === 'live' && o.price > 0);
     const first = live[0];
     if (!first) return null;
+    const productUrl = this.url(`producto/${encodeURIComponent(first.productKey)}`);
     const prices = live.map((o) => o.price);
     const valid = new Date(
       Math.max(...live.map((o) => Date.parse(o.observedAt) || 0)) + 7 * 86_400_000,
     )
       .toISOString()
       .slice(0, 10);
+    // Una fecha de validez ya vencida (foto vieja) invalida la oferta: mejor omitirla
+    // que prometer un precio vigente que ya no lo es.
+    const priceValidUntil = valid >= new Date().toISOString().slice(0, 10) ? valid : null;
+    const images = [...new Set(live.map((o) => o.image).filter((i): i is string => !!i))];
+    const storeNames = [...new Set(live.map((o) => STORES[o.storeId]?.name ?? o.storeId))];
     const each = live.map((o) => ({
       '@type': 'Offer',
-      url: o.url,
+      // Si la tienda no trae enlace propio, la oferta apunta a la ficha de Ñapa.
+      url: o.url || productUrl,
+      sku: o.id,
       price: o.price,
       priceCurrency: 'COP',
-      priceValidUntil: valid,
-      availability: 'https://schema.org/InStock',
+      ...(priceValidUntil ? { priceValidUntil } : {}),
+      // El stock manda: cantidad 0 conocida no es InStock aunque la oferta siga listada.
+      availability: o.stock === 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
       seller: { '@type': 'Organization', name: STORES[o.storeId]?.name ?? o.storeId },
     }));
+    const category = CATEGORY_LABEL[first.category] ?? first.category;
     return {
       '@type': 'Product',
+      '@id': productUrl,
       name: first.title,
+      description:
+        `${first.title}${first.brand ? ` (${first.brand})` : ''}: compara precios en ` +
+        `${storeNames.join(' y ')} desde ${cop(Math.min(...prices))} COP en Ñapa, Colombia. ` +
+        `Categoría: ${category}. Precio observado por Ñapa; la disponibilidad la confirma la tienda.`,
       ...(first.brand ? { brand: { '@type': 'Brand', name: first.brand } } : {}),
-      ...(first.image ? { image: [first.image] } : {}),
-      category: CATEGORY_LABEL[first.category] ?? first.category,
-      url: this.url(`producto/${encodeURIComponent(first.productKey)}`),
+      ...(images.length ? { image: images } : {}),
+      category,
+      url: productUrl,
       offers:
         each.length === 1
           ? each[0]

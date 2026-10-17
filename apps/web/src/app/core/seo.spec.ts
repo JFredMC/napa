@@ -79,6 +79,45 @@ describe('Seo', () => {
     expect(doc.getElementById('napa-ld')).toBeNull();
   });
 
+  it('JSON-LD de producto: imagen de otra tienda, stock 0, sin URL propia y validez vencida', () => {
+    const { seo } = setup();
+    const ld = seo.product([
+      offer({ stock: 0, url: undefined, image: undefined, observedAt: '2020-01-01T00:00:00.000Z' }),
+      offer({
+        id: 'olimpica-1',
+        storeId: 'olimpica',
+        price: 20500,
+        image: 'https://tienda.example/olimpica.jpg',
+        observedAt: '2020-01-01T00:00:00.000Z',
+      }),
+    ]) as {
+      description: string;
+      image: string[];
+      offers: { offers: Record<string, unknown>[] };
+    };
+    expect(ld.image).toEqual(['https://tienda.example/olimpica.jpg']);
+    expect(ld.description).toContain('Arroz </script> Diana');
+    expect(ld.description).toContain('$20.500');
+    const [first, second] = ld.offers.offers;
+    // Sin URL de la tienda, la oferta apunta a la ficha de Ñapa; el stock 0 no es InStock.
+    expect(first!['url']).toBe('https://napa.test/producto/jumbo-1');
+    expect(first!['sku']).toBe('jumbo-1');
+    expect(first!['availability']).toBe('https://schema.org/OutOfStock');
+    expect(second!['availability']).toBe('https://schema.org/InStock');
+    // La foto vieja (2020/2026 frente a hoy) no promete priceValidUntil ya vencido.
+    expect(first).not.toHaveProperty('priceValidUntil');
+    expect(second).not.toHaveProperty('priceValidUntil');
+  });
+
+  it('JSON-LD de producto: priceValidUntil vigente se conserva', () => {
+    const { seo } = setup();
+    const future = new Date(Date.now() + 86_400_000).toISOString();
+    const ld = seo.product([offer({ observedAt: future })]) as {
+      offers: Record<string, unknown>;
+    };
+    expect(typeof ld.offers['priceValidUntil']).toBe('string');
+  });
+
   it('ItemList enlaza a las páginas de producto de Ñapa', () => {
     const { seo } = setup();
     const list = seo.itemList('Top', [offer({})]) as { itemListElement: unknown[] };

@@ -43,6 +43,23 @@ export function flattenRoutes(dir = out) {
   return moved;
 }
 
+/**
+ * XML del sitemap. Cada ruta puede ser texto o `{ path, lastmod }`; el `lastmod` solo se
+ * emite si trae una fecha real (AAAA-MM-DD) de los datos. Antes se ponía la fecha del
+ * build a las 851 URLs y Google terminaba ignorándola por inverosímil.
+ */
+export function sitemapXml(siteUrl, routes) {
+  const urls = routes
+    .map((r) => {
+      const path = typeof r === 'string' ? r : r.path;
+      const lastmod = typeof r === 'string' ? '' : (r.lastmod ?? '');
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(lastmod) ? lastmod : '';
+      return `  <url><loc>${new URL(path, siteUrl).href}</loc>${date ? `<lastmod>${date}</lastmod>` : ''}</url>`;
+    })
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
 export function postbuild(config, extraRoutes = []) {
   const site = new URL(config.siteUrl);
   // URLs absolutas de Open Graph según el dominio configurado (las páginas prerenderizadas ya
@@ -80,17 +97,7 @@ export function postbuild(config, extraRoutes = []) {
   }
 
   const routes = [...STATIC_ROUTES, ...extraRoutes];
-  const today = new Date().toISOString().slice(0, 10);
-  const urls = routes
-    .map(
-      (r) =>
-        `  <url><loc>${new URL(r, config.siteUrl).href}</loc><lastmod>${today}</lastmod></url>`,
-    )
-    .join('\n');
-  writeFileSync(
-    out + 'sitemap.xml',
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
-  );
+  writeFileSync(out + 'sitemap.xml', sitemapXml(config.siteUrl, routes));
   // En github.io este robots.txt queda en /napa/ y no aplica (manda el de jfredmc.github.io);
   // con dominio propio queda en la raíz.
   writeFileSync(
