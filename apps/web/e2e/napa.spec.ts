@@ -258,6 +258,13 @@ test.describe('SEO: HTML prerenderizado', () => {
     expect(locs.length).toBeGreaterThan(50);
     const category = locs.find((l) => l.includes('/categoria/'))!;
     const product = locs.find((l) => l.includes('/producto/'))!;
+    // lastmod real (fecha en que se observó el precio), no la fecha del build para todo:
+    // el producto lo trae y la portada, sin fecha de datos, no lo inventa.
+    const entries = sitemap.split('<url>').slice(1);
+    const productEntry = entries.find((e) => e.includes(`<loc>${product}</loc>`))!;
+    expect(productEntry).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+    const homeEntry = entries.find((e) => e.includes(`<loc>${site}</loc>`))!;
+    expect(homeEntry).not.toContain('<lastmod>');
 
     expect(category.startsWith(site)).toBe(true);
     const catRes = await request.get(local(category));

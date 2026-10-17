@@ -20,10 +20,26 @@ const ng = spawnSync('ng', ['build', '--base-href', base], { stdio: 'inherit', s
 if (ng.status !== 0) process.exit(ng.status ?? 1);
 // Sitemap: categorías con precios reales y una página por producto de la foto (src/snapshot.json).
 const snapshot = JSON.parse(readFileSync(new URL('../src/snapshot.json', import.meta.url), 'utf8'));
-const categories = [...new Set(snapshot.offers.map((o) => `categoria/${o.category}`))];
-const products = [
-  ...new Set(snapshot.offers.map((o) => `producto/${encodeURIComponent(o.productKey)}`)),
-];
+// lastmod real por ruta: la última vez que Ñapa observó un precio de ese producto/categoría
+// en la foto (observedAt de las ofertas), no la fecha en que corrió el build.
+const lastObserved = (offers) => {
+  const times = offers.map((o) => Date.parse(o.observedAt)).filter(Number.isFinite);
+  return times.length ? new Date(Math.max(...times)).toISOString().slice(0, 10) : undefined;
+};
+const byCategory = new Map();
+const byProduct = new Map();
+for (const o of snapshot.offers) {
+  byCategory.set(o.category, [...(byCategory.get(o.category) ?? []), o]);
+  byProduct.set(o.productKey, [...(byProduct.get(o.productKey) ?? []), o]);
+}
+const categories = [...byCategory].map(([cat, offers]) => ({
+  path: `categoria/${cat}`,
+  lastmod: lastObserved(offers),
+}));
+const products = [...byProduct].map(([key, offers]) => ({
+  path: `producto/${encodeURIComponent(key)}`,
+  lastmod: lastObserved(offers),
+}));
 const staples = JSON.parse(readFileSync(new URL('../src/staples.json', import.meta.url), 'utf8'));
 const prices = staples.map((s) => `precio/${s.slug}`);
 postbuild(config, [...categories, ...prices, ...products]);
