@@ -116,6 +116,19 @@ describe('Seo', () => {
       offers: Record<string, unknown>;
     };
     expect(typeof ld.offers['priceValidUntil']).toBe('string');
+    expect(ld.offers['validFrom']).toBe(new Date(future).toISOString());
+  });
+
+  it('JSON-LD de producto: validFrom sale de observedAt y se omite si la fecha no es válida', () => {
+    const { seo } = setup();
+    const ok = seo.product([offer({ observedAt: '2026-10-07T12:00:00Z' })]) as {
+      offers: Record<string, unknown>;
+    };
+    expect(ok.offers['validFrom']).toBe('2026-10-07T12:00:00.000Z');
+    const bad = seo.product([offer({ observedAt: 'no-es-fecha' })]) as {
+      offers: Record<string, unknown>;
+    };
+    expect(bad.offers).not.toHaveProperty('validFrom');
   });
 
   it('ItemList enlaza a las páginas de producto de Ñapa', () => {
