@@ -123,6 +123,8 @@ export class Seo {
       sku: o.id,
       price: o.price,
       priceCurrency: 'COP',
+      // validFrom: momento real en que Ñapa leyó este precio en la tienda (observedAt).
+      ...(validFrom(o.observedAt) ? { validFrom: validFrom(o.observedAt) } : {}),
       ...(priceValidUntil ? { priceValidUntil } : {}),
       // El stock manda: cantidad 0 conocida no es InStock aunque la oferta siga listada.
       availability: o.stock === 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
@@ -178,4 +180,10 @@ export class Seo {
     );
     this.doc.head.appendChild(el);
   }
+}
+
+/** ISO 8601 normalizado de una fecha real; null si no es válida (nunca se inventa). */
+function validFrom(observedAt: string | undefined): string | null {
+  const t = observedAt ? Date.parse(observedAt) : NaN;
+  return Number.isFinite(t) ? new Date(t).toISOString() : null;
 }
