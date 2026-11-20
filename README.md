@@ -179,7 +179,7 @@ En Render (backend): `ADMIN_TOKEN` (mín. 24 caracteres) y las mismas `NAPA_AFF_
 - **Webhook** (no polling): Render gratis se duerme y un mensaje al bot lo despierta. Al arrancar con `RENDER_EXTERNAL_URL` (Render la pone sola) la API registra `POST /api/telegram/webhook` con una cabecera secreta derivada del token, y los comandos del bot.
 - Deep link desde la web: `https://t.me/NapaOfertasBot?start=q_<base64url de la búsqueda>` (botón “Recibir alertas en Telegram”, configurable con `NAPA_TELEGRAM_BOT_URL`).
 - `.github/workflows/alerts.yml` llama `POST /api/alerts/check` (con `ADMIN_TOKEN`) cada 3 horas: una búsqueda por texto en Jumbo y Olímpica (con la caché y el ritmo de siempre) y aviso si el mínimo baja ≥ 2 % o cruza el precio objetivo.
-- Persistencia: Render gratis no tiene disco. Con `ALERTS_GIST_ID` + `ALERTS_GITHUB_TOKEN` (token clásico solo con permiso `gist`) el estado se guarda **cifrado** (AES-256-GCM) en un gist secreto; sin ellos vive en memoria y se pierde al reiniciar. `GET /api/health` dice `alerts: "gist" | "memory" | "off"`.
+- Persistencia: Render gratis no tiene disco. Con `ALERTS_GIST_ID` + `ALERTS_GITHUB_TOKEN` (token clásico solo con permiso `gist`) el estado se guarda **cifrado** (AES-256-GCM) en un gist secreto; sin ellos vive en memoria y se pierde al reiniciar. GitHub caduca ese token a los 30 días si al crearlo no se elige otra fecha: hay que generar otro y sustituir `ALERTS_GITHUB_TOKEN` en Render (el id del gist no cambia). Si el token está vencido, `POST /api/alerts/check` responde 503 con el motivo, en vez de un 500 genérico. `GET /api/health` dice `alerts: "gist" | "memory" | "off"`.
 
 ## SEO: páginas prerenderizadas (SSG)
 

@@ -59,7 +59,9 @@ services:
       - key: TELEGRAM_CHANNEL_ID
         sync: false
       # Alertas de precio (@NapaOfertasBot): estado cifrado en un gist secreto. Token clásico de
-      # GitHub con SOLO el permiso `gist`. Sin estos dos valores, las alertas viven en memoria.
+      # GitHub con SOLO el permiso `gist`. El formulario lo caduca a los 30 días si no se elige
+      # otra fecha; cuando vence, /api/alerts/check responde 503 hasta sustituir el token.
+      # Sin estos dos valores, las alertas viven en memoria.
       - key: ALERTS_GIST_ID
         sync: false
       - key: ALERTS_GITHUB_TOKEN

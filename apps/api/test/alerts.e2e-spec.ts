@@ -7,7 +7,7 @@ import { fakeFetch } from './fake-fetch';
 const TOKEN = '123:fake-token';
 const ADMIN = 'test-admin-token-0123456789abcdef';
 
-async function start(env: Record<string, string>) {
+async function start(env: Record<string, string>, gistStatus = 200) {
   const base = fakeFetch();
   const sent: { method: string; body: Record<string, unknown> }[] = [];
   const fetchFn = Object.assign(
@@ -16,6 +16,8 @@ async function start(env: Record<string, string>) {
         sent.push({ method: input.split('/').pop()!, body: JSON.parse(String(init?.body)) });
         return new Response('{"ok":true,"result":true}', { status: 200 });
       }
+      if (input.startsWith('https://api.github.com/gists/'))
+        return new Response('{"message":"Bad credentials"}', { status: gistStatus });
       return base(input, init);
     },
     { calls: base.calls, fail: base.fail },
@@ -70,6 +72,31 @@ describe('Alertas de Telegram (e2e)', () => {
       .set('Authorization', `Bearer ${ADMIN}`)
       .expect(200);
     expect(res.body).toEqual({ alerts: 1, notified: 0 });
+    await app.close();
+  });
+
+  it('un token de gist vencido responde 503 y dice qué sustituir en Render', async () => {
+    const { app } = await start(
+      {
+        TELEGRAM_BOT_TOKEN: TOKEN,
+        TELEGRAM_CHANNEL_ID: '@canal',
+        ADMIN_TOKEN: ADMIN,
+        ALERTS_GIST_ID: 'gist-id',
+        ALERTS_GITHUB_TOKEN: 'ghp-vencido',
+      },
+      401,
+    );
+    const http = app.getHttpServer();
+    await request(http)
+      .get('/api/health')
+      .expect(200, { status: 'ok', telegram: true, alerts: 'gist' });
+    const res = await request(http)
+      .post('/api/alerts/check')
+      .set('Authorization', `Bearer ${ADMIN}`)
+      .expect(503);
+    expect(res.body.statusCode).toBe(503);
+    expect(res.body.message).toContain('ALERTS_GITHUB_TOKEN');
+    expect(res.body.message).toContain('HTTP 401');
     await app.close();
   });
 });
