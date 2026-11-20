@@ -26,6 +26,43 @@ export interface AlertStore {
   save(state: AlertsState): Promise<void>;
 }
 
+/**
+ * Fallo al leer o escribir el gist. El mensaje no incluye el token ni el id: sirve para el log
+ * de Render y para el cuerpo de `/api/alerts/check`.
+ */
+export class GistStoreError extends Error {
+  readonly status: number | null;
+  readonly operation: 'load' | 'save';
+
+  constructor(message: string, status: number | null, operation: 'load' | 'save') {
+    super(message);
+    this.name = 'GistStoreError';
+    this.status = status;
+    this.operation = operation;
+  }
+}
+
+function gistHttpError(operation: 'load' | 'save', status: number): GistStoreError {
+  const verb = operation === 'load' ? 'leer' : 'guardar';
+  if (status === 401 || status === 403)
+    return new GistStoreError(
+      `No se pudo ${verb} el gist de alertas (HTTP ${status}). ALERTS_GITHUB_TOKEN está vencido, revocado o sin el permiso gist. Crea un token clásico nuevo (solo scope gist; GitHub lo caduca a los 30 días si no eliges otra fecha) y sustitúyelo en Render. ALERTS_GIST_ID no cambia.`,
+      status,
+      operation,
+    );
+  if (status === 404)
+    return new GistStoreError(
+      `No se pudo ${verb} el gist de alertas (HTTP 404). ALERTS_GIST_ID no existe o el token no es de la cuenta dueña del gist.`,
+      status,
+      operation,
+    );
+  return new GistStoreError(
+    `No se pudo ${verb} el gist de alertas (HTTP ${status}).`,
+    status,
+    operation,
+  );
+}
+
 /** Solo memoria: sirve para pruebas y como respaldo; se pierde al reiniciar Render. */
 export class MemoryStore implements AlertStore {
   readonly kind = 'memory' as const;
@@ -78,29 +115,73 @@ export class GistStore implements AlertStore {
     };
   }
 
+  private async request(operation: 'load' | 'save', init?: RequestInit): Promise<Response> {
+    const verb = operation === 'load' ? 'leer' : 'guardar';
+    let res: Response;
+    try {
+      res = await this.fetch(`https://api.github.com/gists/${this.gistId}`, {
+        ...init,
+        headers: this.headers(),
+      });
+    } catch (e) {
+      throw new GistStoreError(
+        `No se pudo ${verb} el gist de alertas: ${(e as Error).message}`,
+        null,
+        operation,
+      );
+    }
+    if (!res.ok) throw gistHttpError(operation, res.status);
+    return res;
+  }
+
   async load(): Promise<AlertsState> {
     if (this.cache) return structuredClone(this.cache);
-    const res = await this.fetch(`https://api.github.com/gists/${this.gistId}`, {
-      headers: this.headers(),
-    });
-    if (!res.ok) throw new Error(`gist ${res.status}`);
-    const body = (await res.json()) as { files?: Record<string, { content?: string }> };
-    const content = body.files?.['alerts.enc']?.content?.trim();
-    this.cache = content
-      ? (JSON.parse(decrypt(content, this.secret)) as AlertsState)
-      : emptyState();
+    const res = await this.request('load');
+    const body = (await res.json().catch(() => null)) as {
+      files?: Record<string, { content?: string }>;
+    } | null;
+    const content = body?.files?.['alerts.enc']?.content?.trim();
+    if (!content) {
+      this.cache = emptyState();
+      return structuredClone(this.cache);
+    }
+    let json: string;
+    try {
+      json = decrypt(content, this.secret);
+    } catch {
+      throw new GistStoreError(
+        'No se pudo leer el gist de alertas: el contenido no se descifra. La clave es TELEGRAM_BOT_TOKEN; si cambió, el estado cifrado anterior quedó ilegible.',
+        null,
+        'load',
+      );
+    }
+    let parsed: AlertsState;
+    try {
+      parsed = JSON.parse(json) as AlertsState;
+    } catch {
+      throw new GistStoreError(
+        'No se pudo leer el gist de alertas: el contenido descifrado no es JSON válido.',
+        null,
+        'load',
+      );
+    }
+    if (!parsed || parsed.version !== 1 || !parsed.users || typeof parsed.users !== 'object')
+      throw new GistStoreError(
+        'No se pudo leer el gist de alertas: el estado no tiene la forma esperada.',
+        null,
+        'load',
+      );
+    this.cache = parsed;
     return structuredClone(this.cache);
   }
 
   async save(state: AlertsState): Promise<void> {
-    const res = await this.fetch(`https://api.github.com/gists/${this.gistId}`, {
+    await this.request('save', {
       method: 'PATCH',
-      headers: this.headers(),
       body: JSON.stringify({
         files: { 'alerts.enc': { content: encrypt(JSON.stringify(state), this.secret) } },
       }),
     });
-    if (!res.ok) throw new Error(`gist ${res.status}`);
     this.cache = structuredClone(state);
   }
 }

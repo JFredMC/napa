@@ -37,4 +37,14 @@ jobs:
       - name: Revisar alertas
         if: ${{ env.API != '' && env.TOKEN != '' }}
         run: |
-          curl -fsS --max-time 300 -X POST -H "Authorization: Bearer $TOKEN" "$API/api/alerts/check"
+          body=$(mktemp)
+          set +e
+          code=$(curl -sS --max-time 300 -o "$body" -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" "$API/api/alerts/check")
+          status=$?
+          set -e
+          cat "$body"
+          echo
+          if [ "$status" -ne 0 ] || [ "${code#2}" = "$code" ]; then
+            echo "La revisión de alertas falló (curl $status, HTTP ${code:-sin respuesta})." >&2
+            exit 1
+          fi

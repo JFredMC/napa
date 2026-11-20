@@ -10,6 +10,7 @@ import {
   NotFoundException,
   OnApplicationBootstrap,
   Post,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { FetchLike } from '@napa/connectors';
@@ -24,7 +25,7 @@ import {
   type Reply,
   type TgUpdate,
 } from './bot';
-import { GistStore, MemoryStore, type AlertStore } from './store';
+import { GistStore, GistStoreError, MemoryStore, type AlertStore } from './store';
 
 export const ALERT_STORES = ['jumbo', 'olimpica'];
 export const ALERT_STORE = Symbol('ALERT_STORE');
@@ -143,12 +144,20 @@ export class AlertsService implements OnApplicationBootstrap {
 
   check(): Promise<{ alerts: number; notified: number }> {
     return this.locked(async () => {
-      const state = await this.store.load();
-      const replies = await checkAlerts(state, this.lookup, this.clock(), this.config.siteUrl);
-      const notified = await this.send(replies, state);
-      await this.store.save(state);
-      const alerts = Object.values(state.users).reduce((n, u) => n + u.alerts.length, 0);
-      return { alerts, notified };
+      try {
+        const state = await this.store.load();
+        const replies = await checkAlerts(state, this.lookup, this.clock(), this.config.siteUrl);
+        const notified = await this.send(replies, state);
+        await this.store.save(state);
+        const alerts = Object.values(state.users).reduce((n, u) => n + u.alerts.length, 0);
+        return { alerts, notified };
+      } catch (e) {
+        if (e instanceof GistStoreError) {
+          this.log.error(e.message);
+          throw new ServiceUnavailableException(e.message);
+        }
+        throw e;
+      }
     });
   }
 }
